@@ -136,14 +136,20 @@ class go4wSpider(scrapy.Spider):
 
         if(result['isSupplier']):
 
+            try:
+
             #####Extract information from 'supplierText' string
-            temp = str(result['supplierText'])[2:-2]
-            temp = re.sub(' +', ' ', temp)
-            tokens_ = temp.split("\\r\\n")
-            for t in tokens_:
-                clean_t_ = t.split(":")
-                if (len(clean_t_) == 2 and len(clean_t_[0]) > 0 and len(clean_t_[1]) > 0):
-                    newResult[str(clean_t_[0].replace('\\n', '').strip())] = clean_t_[1].replace('\\n', '').strip()
+                temp = str(result['supplierText'])[2:-2]
+                temp = re.sub(' +', ' ', temp)
+                tokens_ = temp.split("\\r\\n")
+                for t in tokens_:
+                    clean_t_ = t.split(":")
+                    if (len(clean_t_) == 2 and len(clean_t_[0].replace('\\n', '').replace(' ','').strip()) > 0 and len(clean_t_[1].replace(' ','').replace('\\n', '').strip()) >0):
+                        newResult[str(clean_t_[0].replace('\\n', '').replace(' ','').replace('.','').strip())] = clean_t_[1].replace(' ','').replace('\\n', '').strip()
+                        #newResult['a'] = clean_t_[1].replace(' ','').replace('\\n', '').strip()
+
+            except:
+                pass
 
         elif(result['isBuyer']):
 
@@ -153,12 +159,13 @@ class go4wSpider(scrapy.Spider):
             tokens_ = temp.split("\\r\\n")
             for t in tokens_:
                 clean_t_ = t.split(":")
-            if (len(clean_t_) == 2 and len(clean_t_[0]) > 0 and len(clean_t_[1]) > 0):
-                newResult[str(clean_t_[0].replace('\\n', '').strip())] = clean_t_[1].replace('\\n', '').strip()
+            if (len(clean_t_) == 2 and len(clean_t_[0].replace('\\n', '').replace(' ','').strip()) > 0 and len(clean_t_[1].replace('\\n', '').replace(' ','').strip()) > 0):
+                newResult[str(clean_t_[0].replace('\\n', '').replace(' ','').strip())] = clean_t_[1].replace('\\n', '').replace(' ','').strip()
 
         # update result document in MongoDB
 
-        if (newResult != {}) : self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
+        if (newResult != {}):
+            self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
     ############################################################
     def nestedURLGeneralCompanyCrawler(self, response):
@@ -483,7 +490,7 @@ class go4wSpider(scrapy.Spider):
         supplierCountrySelector = './/span[@class="pull-left subtitle text-capitalize"]/text()'
         supplierCompanyLinkSelector = './/span[@class="pull-left"]/a/@href'
         supplierCompanyNameSelector = './/span[@class="pull-left"]/a/h2/span/text()'
-        supplierTextSelector = './/div[@class="col-xs-12 entity-row-description-search product-list-search xs-padd-lr-5"]/p/text()'
+        supplierTextSelector = './/div[@class="col-xs-12 entity-row-description-search xs-padd-lr-5"]/p/text()'
         supplierSupplierOFSelector = './/div[@class="col-xs-12 xs-padd-lr-5"]/div/a/text()'
 
         outJson = []
@@ -593,10 +600,10 @@ class go4wSpider(scrapy.Spider):
 
 
 
-# process = CrawlerProcess({
-#     #'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
-# })
-#
-# process.crawl(go4wSpider)
-#
-# process.start()
+process = CrawlerProcess({
+    #'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
+})
+
+process.crawl(go4wSpider)
+
+process.start()
