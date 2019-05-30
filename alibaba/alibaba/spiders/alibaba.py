@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient
 ##################################################
 ##################################################
+headers = {
+    'User-Agent': 'Mozilla\/5.0 (compatible MSIE 10.0 Windows Phone 8.0 Trident\/6.0 IEMobile\/10.0 ARM Touch NOKIA Lumia 520)',
+}
 ##################################################
 def change_proxy():
     '''
