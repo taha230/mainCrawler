@@ -7,6 +7,28 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient
 ##################################################
 ##################################################
+##################################################
+def change_proxy():
+    '''
+    function_name: change_proxy
+    input: none
+    output: none
+    description: change proxy with proxyrotator api
+    '''
+    url = 'http://falcon.proxyrotator.com:51337/'
+
+    params = dict(
+        apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
+    )
+
+    resp = requests.get(url=url, params=params)
+    data = json.loads(resp.text)
+    print('************************************')
+    print('Changing Proxy...')
+    print('************************************')
+    return data['proxy'], data['randomUserAgent']
+
+####################################################
 def create_category_url():
     '''
     function_name: create_category_url
