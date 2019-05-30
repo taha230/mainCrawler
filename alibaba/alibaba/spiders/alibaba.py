@@ -3,6 +3,7 @@ import scrapy
 from scrapy.crawler import CrawlerProcess
 import json
 import re
+import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
 ##################################################
