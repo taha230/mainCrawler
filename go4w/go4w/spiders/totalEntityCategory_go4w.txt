@@ -1,0 +1,14 @@
+suppliers/Agriculture-Harvesters.html--- 220 search result ---
+suppliers/Agriculture-Bags.html--- 180 search result ---
+suppliers/Agriculture-Choppers-Shredders-Cutters.html--- 200 search result ---
+buyers/Agriculture-Harvesters.html--- 120 search result ---
+buyers/Agriculture-Bags.html--- 40 search result ---
+buyers/Agriculture-Choppers-Shredders-Cutters.html--- 60 search result ---
+suppliers/Agriculture-Farm-Tractors.html--- 200 search result ---
+suppliers/Agriculture-Grinders-Multures.html--- 80 search result ---
+buyers/Agriculture-Farm-Tractors.html--- 80 search result ---
+suppliers/Agriculture-Sheller.html--- 60 search result ---
+suppliers/Agriculture-Pumps.html--- 120 search result ---
+buyers/Agriculture-Nets.html--- 60 search result ---
+suppliers/Agriculture-Nets.html--- 200 search result ---
+suppliers/Agriculture-Sprayers.html--- 360 search result ---
