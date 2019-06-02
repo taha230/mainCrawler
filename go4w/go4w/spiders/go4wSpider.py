@@ -39,17 +39,15 @@ class go4wSpider(scrapy.Spider):
     start_urls = create_category_url()
 
     # Connect to MongoDB
-    client = MongoClient('192.168.1.3', 27017)
-    db = client['CrawlingData']
-    collection_go4w_data = db['go4w_data']
+    #client = MongoClient('192.168.1.3', 27017)
+    #db = client['CrawlingData']
+    #collection_go4w_data = db['go4w_data']
 
     crawlingEntityCategoryCount = open("totalEntityCategory_go4w.txt", "w")
-    #crawlingEntityCategoryCount2 = open("totalEntityCategory_go4w_total.txt", "w")
     bar = Bar('Crawling go4w', max=len(start_urls))
     progressBarIter = 0
     totalEntityNumber = 0
-    collection_go4w_data.delete_many({})  # Delete all documents in collection
-    #settings.overrides['SCHEDULER_ORDER'] = 'DFO'
+    #collection_go4w_data.delete_many({})  # Delete all documents in collection
 
     #settings.set('SCHEDULER_ORDER', 'BFO')
     #settings.set('DOWNLOAD_TIMEOUT', 1 * 60)
@@ -164,8 +162,8 @@ class go4wSpider(scrapy.Spider):
 
         # update result document in MongoDB
 
-        if (newResult != {}):
-            self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
+        #if (newResult != {}):
+            #self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
     ############################################################
     def nestedURLGeneralCompanyCrawler(self, response):
@@ -222,8 +220,7 @@ class go4wSpider(scrapy.Spider):
 
             # update result document in MongoDB
 
-            self.collection_go4w_data.update({'Key': result['Key']},
-                                 {'$set': newResult})
+            #self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
 
 
@@ -295,8 +292,7 @@ class go4wSpider(scrapy.Spider):
 
         # update result document in MongoDB
 
-        self.collection_go4w_data.update({'Key': result['Key']},
-                                         {'$set': newResult})
+        #self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
     ########################################################################
     def nestedURLProductsCompanyCrawler(self, response):
@@ -346,8 +342,7 @@ class go4wSpider(scrapy.Spider):
 
         # update result document in MongoDB
 
-        self.collection_go4w_data.update({'Key': result['Key']},
-                                         {'$set': newResult})
+        #self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
     #########################################################################
     def nestedURLManagementCompanyCrawler(self, response):
@@ -370,8 +365,7 @@ class go4wSpider(scrapy.Spider):
 
         # update result document in MongoDB
 
-        self.collection_go4w_data.update({'Key': result['Key']},
-                                         {'$set': newResult})
+        #self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
     ##########################################################################
     def nestedURLFacilitiesCompanyCrawler(self, response):
@@ -398,8 +392,7 @@ class go4wSpider(scrapy.Spider):
 
         # update result document in MongoDB
 
-        self.collection_go4w_data.update({'Key': result['Key']},
-                                         {'$set': newResult})
+        #self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
     ##########################################################################
     def nestedURLNewsRoomCompanyCrawler(self, response):
@@ -422,8 +415,7 @@ class go4wSpider(scrapy.Spider):
 
         # update result document in MongoDB
 
-        self.collection_go4w_data.update({'Key': result['Key']},
-                                         {'$set': newResult})
+        #self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
 
     #########################################################################
     def buyerCrawler(self, response):
@@ -433,6 +425,9 @@ class go4wSpider(scrapy.Spider):
         output: crawlerDataset
         description: crawl all information from buyer in www.go4worldbusiness.com
         '''
+
+        return
+
         searchResultSelector = '//div[@class="col-xs-12 nopadding search-results"]'
         dateSearchResultSelector = './/div[@class="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding"]/small/text()'
         buyerProductNameSelector = './/h2[@class="text-capitalize entity-row-title h2-item-title"]/span/text()'
@@ -443,6 +438,7 @@ class go4wSpider(scrapy.Spider):
         buyerCompanyLinkSelector = './/span[@class="pull-left"]/a/@href'
 
         outJson = []
+
         for searchResultSet in response.xpath(searchResultSelector):
             result = {
                 'buyerCompanyName': searchResultSet.xpath(buyerCompanyNameSelector).extract(),
@@ -460,7 +456,7 @@ class go4wSpider(scrapy.Spider):
 
             # Add to MongoDB
             clean_result = self.clean_text(result)
-            self.collection_go4w_data.insert_one(clean_result)
+            #self.collection_go4w_data.insert_one(clean_result)
 
             #Nested company link crawler
             if (result['buyerCompanyName'] != []): # crawl nested company link for cases have type buyerCompanyName (not person link and with star in front)
@@ -469,13 +465,11 @@ class go4wSpider(scrapy.Spider):
             else:
                 self.tokenize_buyer_or_supplier_text(result)
 
-            outJson.append(result)
-
-        #self.bar.next()
-        #self.progressBarIter += 1
+            #outJson.append(result)
 
 
-        return outJson
+
+        #return outJson
 
     ###################################################
     def supplierCrawler(self, response):
@@ -485,6 +479,9 @@ class go4wSpider(scrapy.Spider):
         output: list of result as json
         description: crawl all information from supplier in www.go4worldbusiness.com
         '''
+
+        return
+
         searchResultSelector = '//div[@class="col-xs-12 nopadding search-results"]'
         dateSearchResultSelector = './/div[@class="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding"]/small/text()'
         supplierCountrySelector = './/span[@class="pull-left subtitle text-capitalize"]/text()'
@@ -494,6 +491,7 @@ class go4wSpider(scrapy.Spider):
         supplierSupplierOFSelector = './/div[@class="col-xs-12 xs-padd-lr-5"]/div/a/text()'
 
         outJson = []
+
         for searchResultSet in response.xpath(searchResultSelector):
 
             result = {
@@ -514,7 +512,7 @@ class go4wSpider(scrapy.Spider):
 
 
 
-            self.collection_go4w_data.insert_one(clean_result)
+            #self.collection_go4w_data.insert_one(clean_result)
 
             # crawl nested company link
             if (result['supplierCompanyLink'] != []): # crawl nested company link for cases have supplier company link
@@ -522,12 +520,10 @@ class go4wSpider(scrapy.Spider):
                 nestedURLCompany = "https://www.go4worldbusiness.com" + str(result['supplierCompanyLink'])[2:-2]
                 yield scrapy.Request(url=nestedURLCompany, callback=self.nestedURLGeneralCompanyCrawler, meta={'inputJson': result})
 
-            outJson.append(result)
+            #outJson.append(result)
 
-        #self.bar.next()
-        #self.progressBarIter += 1
 
-        return outJson
+        #return outJson
 
     ##################################################
     def parse(self, response):
@@ -537,7 +533,6 @@ class go4wSpider(scrapy.Spider):
         output: list of result as json
         description: parse all information from search result in www.go4worldbusiness.com and go throw the next page until the last page of supplier and buyer
         '''
-
         lastPageSelector = './/ul[@class="pagination"]/li/a/@href'
 
         lastPagelist = response.xpath(lastPageSelector).extract()
@@ -559,7 +554,10 @@ class go4wSpider(scrapy.Spider):
             try:
                 lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1]
                 if ( "pg_buyers" not in lastPageBuyerhref ): # category has only one page of buyer
-                    yield scrapy.Request(url=response.request.url, callback=self.buyerCrawler)
+                   yield scrapy.Request(url=response.request.url, callback=self.buyerCrawler)
+                   self.totalEntityNumber += 20
+                   self.crawlingEntityCategoryCount.write(str(response.request.url).replace('https://www.go4worldbusiness.com/','') + "--- %s search result ---" % 20 + '\n')
+
                 else:
                     buyerTotalPageNum = int (str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1]) # parse the buyer total page number
                     self.totalEntityNumber += (buyerTotalPageNum * 20)
@@ -567,7 +565,7 @@ class go4wSpider(scrapy.Spider):
                     for buyerPageNum in range(buyerTotalPageNum) :
                         next_page = response.request.url+"?region=worldwide&pg_buyers=" + str(buyerPageNum+1) # +1 to start from 1 to buyerPageNum
                         yield scrapy.Request(url=next_page, callback=self.buyerCrawler)
-                        #break
+                        break
             except (IndexError, ConnectionError) as error:
                 pass
 
@@ -576,6 +574,9 @@ class go4wSpider(scrapy.Spider):
                 lastPageSupplierhref = lastPagelist[len(lastPagelist) - 1]
                 if ( "pg_suppliers" not in lastPageSupplierhref ): # category has only one page of supplier
                     yield scrapy.Request(url=response.request.url, callback=self.supplierCrawler)
+                    self.totalEntityNumber +=  20
+                    self.crawlingEntityCategoryCount.write(str(response.request.url).replace('https://www.go4worldbusiness.com/','') + "--- %s search result ---" % 20 + '\n')
+
                 else:
                     supplierTotalPageNum = int (str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1]) # parse the supplier total page number
                     self.totalEntityNumber += (supplierTotalPageNum * 20)
@@ -583,7 +584,7 @@ class go4wSpider(scrapy.Spider):
                     for supplierPageNum in range(supplierTotalPageNum) :
                         next_page = response.request.url+"?region=worldwide&pg_suppliers=" + str(supplierPageNum+1) # +1 to start from 1 to supplierPageNum
                         yield scrapy.Request(url=next_page, callback=self.supplierCrawler)
-                        #break
+                        break
             except (IndexError, ConnectionError) as error:
                 pass
 
@@ -600,10 +601,10 @@ class go4wSpider(scrapy.Spider):
 
 
 
-process = CrawlerProcess({
-    #'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
-})
-
-process.crawl(go4wSpider)
-
-process.start()
+# process = CrawlerProcess({
+#     #'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
+# })
+#
+# process.crawl(go4wSpider)
+#
+# process.start()

@@ -4,7 +4,6 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-from logging import exception
 
 from scrapy import signals
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
@@ -24,8 +23,7 @@ import requests
 import json
 import urllib
 
-
-class Go4WSpiderMiddleware(object):
+class EworldtradeSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -73,7 +71,7 @@ class Go4WSpiderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class Go4WDownloaderMiddleware(object):
+class EworldtradeDownloaderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
@@ -87,8 +85,6 @@ class Go4WDownloaderMiddleware(object):
     headers = {
         'User-Agent': 'Mozilla\/5.0 (compatible MSIE 10.0 Windows Phone 8.0 Trident\/6.0 IEMobile\/10.0 ARM Touch NOKIA Lumia 520)',
     }
-
-    proxy = "http://101.51.141.123:8080"
 
     ##################################################
     def change_proxy(self):
@@ -111,8 +107,6 @@ class Go4WDownloaderMiddleware(object):
         print('************************************')
         return data['proxy'], data['randomUserAgent']
 
-
-
     @classmethod
 
     def from_crawler(cls, crawler):
@@ -126,26 +120,14 @@ class Go4WDownloaderMiddleware(object):
         self.requestCallCount += 1
 
         # changed the proxy for each 100 requests count
-        if self.requestCallCount == 200:
+        if self.requestCallCount == 10:
             proxy, userAgent = self.change_proxy()
-            proxy_ = "http://" + proxy
-            request.meta['proxy'] = proxy_
-            self.proxy = proxy_
+            request.meta['proxy'] = "http://" + proxy
             self.headers['User-Agent'] = userAgent
             request.meta['headers'] = self.headers
             self.requestCallCount = 0
 
-        else:
-            request.meta['proxy'] = self.proxy
-            request.meta['headers'] = self.headers
-
-        # print ("+++++++++++++++++++++++++++++++++++++++")
-        # print (self.headers)
-        # print (self.proxy)
-        # print ("+++++++++++++++++++++++++++++++++++++++")
-
         return None
-
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
@@ -157,11 +139,9 @@ class Go4WDownloaderMiddleware(object):
         return response
 
     def process_exception(self, request, exception, spider):
-        # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
 
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY):
-            print('Network Connectoin : ', exception.__class__.__name__, 'Occured ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Rety')
+            print("Network Connection Exception Occured >>>>>>>>>>>>> Retry ")
             return self._retry(request, exception, spider)
         elif isinstance(exception, urllib.error.HTTPError):
             if exception.code == 403:
@@ -173,7 +153,6 @@ class Go4WDownloaderMiddleware(object):
                 self._retry(request, exception, spider)
         else:
             pass
-
 
     def _retry(self, request, reason, spider):
         '''
