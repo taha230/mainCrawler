@@ -173,7 +173,6 @@ class alibabaSpider(scrapy.Spider):
             product_link = soup.select('h2.title a[href]')[0]['href']
             allProductsLink.append("https:" + str(product_link))
 
-
         for link in allProductsLink:
             yield scrapy.Request(url=link,callback=self.productUrlCrawler)
     ####################################################

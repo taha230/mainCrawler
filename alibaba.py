@@ -75,23 +75,28 @@ def main_parse(urls):
     for url in urls:
         # Products
         for i in range(1, 101):
-            try:
-                soup = BeautifulSoup(requests.get(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i), proxies={'http': proxy}, headers=headers).content, 'html.parser')
-                items = soup.find_all('h2', class_='title')
-                items_urls = [i.find('a').attrs['href'] for i in items]
+            while True:
+                try:
+                    soup = BeautifulSoup(requests.get(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i), proxies={'http': proxy}, headers=headers).content, 'html.parser')
+                    items = soup.find_all('h2', class_='title')
+                    items_urls = [i.find('a').attrs['href'] for i in items]
 
-                for iu in items_urls:
-                    product_parse(iu)
+                    for iu in items_urls:
+                        product_parse(iu)
 
-            except urllib.error.HTTPError as e:
-                if (e.code == 403):
-                    proxy, useragent = change_proxy()
-                    headers['User-Agent'] = useragent
-                    print('********************************************')
-                    print('Changing Proxy ... ' + proxy)
-                    print('********************************************')
-            except:
-                pass
+                except urllib.error.HTTPError as e:
+                    if (e.code == 403):
+                        proxy, useragent = change_proxy()
+                        headers['User-Agent'] = useragent
+                        print('********************************************')
+                        print('Changing Proxy ... ' + proxy)
+                        print('********************************************')
+                        continue
+                except:
+                    continue
+
+                else:
+                    break
 
 ############################################################
 ############################################################

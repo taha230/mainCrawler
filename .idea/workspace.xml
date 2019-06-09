@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d1c021a-64bc-4c71-a687-9616be807a70" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/alibaba.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/get_size.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/products_go4w.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alibaba.py" beforeDir="false" afterPath="$PROJECT_DIR$/alibaba.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" beforeDir="false" afterPath="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,19 +26,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="17" selection-start-line="17" selection-end-line="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="333">
-              <caret line="168" column="52" lean-forward="true" selection-start-line="168" selection-start-column="43" selection-end-line="168" selection-end-column="52" />
+            <state relative-caret-position="-1427">
+              <caret line="96" column="41" selection-start-line="96" selection-start-column="41" selection-end-line="96" selection-end-column="41" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -51,8 +40,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/alibaba.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="341">
-              <caret line="82" column="26" lean-forward="true" selection-start-line="82" selection-start-column="26" selection-end-line="82" selection-end-column="26" />
+            <state relative-caret-position="531">
+              <caret line="98" column="25" selection-start-line="98" selection-start-column="25" selection-end-line="98" selection-end-column="25" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -94,7 +83,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" />
         <option value="$PROJECT_DIR$/eworldtrade/eworldtrade/spiders/create_category.py" />
         <option value="$PROJECT_DIR$/eworldtrade/eworldtrade/settings.py" />
         <option value="$PROJECT_DIR$/eworldtrade/eworldtrade/middlewares.py" />
@@ -102,6 +90,7 @@
         <option value="$PROJECT_DIR$/go4w/go4w/middlewares.py" />
         <option value="$PROJECT_DIR$/eworldtrade/eworldtrade/spiders/eworldtradespider.py" />
         <option value="$PROJECT_DIR$/get_size.py" />
+        <option value="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" />
         <option value="$PROJECT_DIR$/alibaba.py" />
       </list>
     </option>
@@ -309,6 +298,11 @@
           <line>266</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/alibaba.py</url>
+          <line>83</line>
+          <option name="timeStamp" value="46" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -508,8 +502,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="333">
-          <caret line="168" column="52" lean-forward="true" selection-start-line="168" selection-start-column="43" selection-end-line="168" selection-end-column="52" />
+        <state relative-caret-position="-1427">
+          <caret line="96" column="41" selection-start-line="96" selection-start-column="41" selection-end-line="96" selection-end-column="41" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
@@ -518,8 +512,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/alibaba.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="341">
-          <caret line="82" column="26" lean-forward="true" selection-start-line="82" selection-start-column="26" selection-end-line="82" selection-end-column="26" />
+        <state relative-caret-position="531">
+          <caret line="98" column="25" selection-start-line="98" selection-start-column="25" selection-end-line="98" selection-end-column="25" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
