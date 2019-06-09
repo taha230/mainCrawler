@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2d1c021a-64bc-4c71-a687-9616be807a70" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/alibaba.py" beforeDir="false" afterPath="$PROJECT_DIR$/alibaba.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" beforeDir="false" afterPath="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,8 +27,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1427">
-              <caret line="96" column="41" selection-start-line="96" selection-start-column="41" selection-end-line="96" selection-end-column="41" />
+            <state relative-caret-position="267">
+              <caret line="191" lean-forward="true" selection-start-line="191" selection-end-line="191" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -40,8 +39,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/alibaba.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="531">
-              <caret line="98" column="25" selection-start-line="98" selection-start-column="25" selection-end-line="98" selection-end-column="25" />
+            <state relative-caret-position="311">
+              <caret line="83" column="12" selection-start-line="83" selection-start-column="12" selection-end-line="83" selection-end-column="12" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -72,6 +71,10 @@
       <find>collection_eworldtrade_data</find>
       <find>403</find>
       <find>total_pages</find>
+      <find>&lt;h1</find>
+      <find>ma-title</find>
+      <find>cheapset</find>
+      <find>cheapest</find>
     </findStrings>
     <replaceStrings>
       <replace>#self.collection_go4w_data</replace>
@@ -298,18 +301,11 @@
           <line>266</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/alibaba.py</url>
-          <line>83</line>
-          <option name="timeStamp" value="46" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="result['date'] " language="Python" />
-        <watch expression="str(lis[len(lis)-1].get('href')).split('&amp;')[-1].split('=')[-1]" language="Python" />
-        <watch expression="uls.findAll('li')" language="Python" />
+        <watch expression="soup.find_all('tr', class_='icbu-shop-table-col-item', recursive=True)" language="Python" />
       </configuration>
     </watches-manager>
   </component>
@@ -328,27 +324,52 @@
     </expressions>
     <expressions id="watch">
       <expression>
-        <expression-string>uls.findAll('li')</expression-string>
+        <expression-string>soup.find_all('tr', class_='icbu-shop-table-col-item', recursive=True)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>str(lis[len(lis)-1].get('href')).split('&amp;')[-1].split('=')[-1]</expression-string>
+        <expression-string>soup.find_all('tr', class_='icbu-shop-table-col-item')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>lis[len(lis)-1].get('href')</expression-string>
+        <expression-string>soup.select('tr.icbu-shop-table-col-item')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.select('.pagination')</expression-string>
+        <expression-string>soup.select('tr.icbu-shop-table-col')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>result['date']</expression-string>
+        <expression-string>soup.select('.icbu-shop-table-col')</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[i.find('div').find('span').text.strip() for i in soup.select('.icbu-shop-table-col')[0].select('td.content')]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[i.find('div').find('span').text.strip() for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[i.find('div').find('span').text.split() for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[i.find('div').find('span') for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[i.find('div') for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -476,20 +497,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/get_size.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1078">
-          <caret line="14" column="18" selection-start-line="14" selection-start-column="18" selection-end-line="14" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/lib/python3/dist-packages/requests/adapters.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="200">
           <caret line="507" selection-start-line="507" selection-end-line="507" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="267">
+          <caret line="191" lean-forward="true" selection-start-line="191" selection-end-line="191" />
+          <folding>
+            <element signature="e#24#37#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -500,20 +521,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
+    <entry file="file://$PROJECT_DIR$/get_size.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1427">
-          <caret line="96" column="41" selection-start-line="96" selection-start-column="41" selection-end-line="96" selection-end-column="41" />
+        <state relative-caret-position="-1078">
+          <caret line="14" column="18" selection-start-line="14" selection-start-column="18" selection-end-line="14" selection-end-column="18" />
           <folding>
-            <element signature="e#24#37#0" expanded="true" />
+            <element signature="e#0#15#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/alibaba.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="531">
-          <caret line="98" column="25" selection-start-line="98" selection-start-column="25" selection-end-line="98" selection-end-column="25" />
+        <state relative-caret-position="311">
+          <caret line="83" column="12" selection-start-line="83" selection-start-column="12" selection-end-line="83" selection-end-column="12" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
