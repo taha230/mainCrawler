@@ -22,48 +22,50 @@ def change_proxy():
     function_name: change_proxy
     input: none
     output: none
-    description: change proxy with proxyrotator api
+    description: change
+    proxy
+    with proxyrotator api
     '''
+
     url = 'http://falcon.proxyrotator.com:51337/'
 
     params = dict(
         apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
     )
 
-    resp = requests.get(url=url, params=params)
-    data = json.loads(resp.text)
     print('********************************************')
+    data = ''
+    while True:
+        resp = requests.get(url=url, params=params)
+        if resp.status_code == 200:
+            data = json.loads(resp.text)
+            break
+        else:
+            print('Proxy not Working ... Trying new one.')
+            continue
+
     print('Changing Proxy ... ' + data['proxy'])
     print('********************************************')
     return data['proxy'], data['randomUserAgent']
 
 ###########################################################
-def create_category_url():
+def read_category_url():
     '''
-    function_name: create_category_url
+    function_name: read_category_url
     input: none
-    output: start_urls for scrapy
-    description: add products to urls from products_alibaba.json file
+    output: start_urls for Beautifulsoup
+    description: add categories to urls from CategoriesLinks_globalresources.txt file
     '''
 
-    #proxy, useragent = change_proxy()
-    from selenium import webdriver
-    driver = webdriver.chrome()
-    driver.get("https://www.globalsources.com/")
-    commentHTML = driver.find_elements_by_class_name('item')
-
-    #headers['User-Agent'] = useragent
-    soup = BeautifulSoup(requests.get("https://www.globalsources.com/").content, 'html.parser')
-    lis = soup.findAll("a")
-
-    for tag in lis:
-        for subtag in tag.descendants:
-            print(subtag)
+    file = open('CategoriesLinks_globalresources.txt', 'r')
+    categories = file.read().split('\n')
 
 
-    urls = [li.find('a') for li in lis if li]
-    urls = [url for url in urls if url is not None]
-    urls = [url.attrs['href'] for url in urls if 'pid' in str(url)]
+    urls = []
+    # categories = categories[0:10]
+    for c in list(categories):
+        urls.append(str(c))
+        # return urls
 
     return urls
 ############################################################
@@ -89,29 +91,41 @@ def main_parse(urls):
     headers['User-Agent'] = useragent
     ########################################################
     for url in urls:
-        # Products
-        for i in range(1, 101):
+        # categories
+        while True:
             try:
-                soup = BeautifulSoup(requests.get(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i), proxies={'http': proxy}, headers=headers).content, 'html.parser')
-                items = soup.find_all('h2', class_='title')
-                items_urls = [i.find('a').attrs['href'] for i in items]
+                u1 = urllib.urlretrieve(str(url))
+                soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers).content, 'html.parser')
+                items = soup.find_all('div', recursive=True)
+                #items_urls = [i.find('a').attrs['href'] for i in items]
+                ls = soup.select('div.image_tit')
+                if(not ls):
+                    print('not founding')
+                    proxy, useragent = change_proxy()
+                    headers['User-Agent'] = useragent
+                    continue
 
-                for iu in items_urls:
-                    product_parse(iu)
+                #for iu in items_urls:
+                #    product_parse(iu)
+
 
             except urllib.error.HTTPError as e:
                 if (e.code == 403):
                     proxy, useragent = change_proxy()
                     headers['User-Agent'] = useragent
-                    print('********************************************')
-                    print('Changing Proxy ... ' + proxy)
-                    print('********************************************')
+                    continue
+
             except:
-                pass
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                print('Error Occurred in function and try again')
+                continue
+            else:
+                break
 
 ############################################################
 ############################################################
 ############################################################
 
-urls = create_category_url()
+urls = read_category_url()
 main_parse(urls)
