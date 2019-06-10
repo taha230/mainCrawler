@@ -28,4 +28,4 @@ def html_to_json(content, indent=None):
             for index in cells:
                 items.append(index.text.strip())
         data.append(items)
-    return json.dumps(data, indent=indent)
+    return data
