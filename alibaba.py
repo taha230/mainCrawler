@@ -6,6 +6,7 @@ import urllib
 import multiprocessing
 import re
 import requests
+from tabletojson import html_to_json
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
 ##################################################
@@ -65,7 +66,7 @@ def company_parse(url,data):
     while True:
         try:
             #company description
-            soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers).content, 'html.parser')
+            soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers, timeout=10).content, 'html.parser')
             company_name = soup.select('span.title-text')[0].text.strip()
             company_join_year = soup.findAll('span', class_='join-year')[0].find('span').text.strip()
             company_description = soup.find('div', class_='company-card-desc').find('div').text.strip()
@@ -78,10 +79,15 @@ def company_parse(url,data):
             values = [i.text.strip() for i in soup.select('div.transaction-detail-content')]
             for i in range(0, len(values)):
                 if values[i] is not None and values[i] != 'Hidden':
-                    data[keys[i]] = values[i]
+                    data[('company_' + str(keys[i])).replace(' ','_')] = values[i]
 
 
-            
+            #extract data from tables
+            parts = soup.select('.infoList-mod-field')
+            for p in parts:
+                title = p.find('h3').text.strip()
+                table = html_to_json(str(p.find('table', recursive=True)))
+
 
 
 
@@ -113,7 +119,7 @@ def product_parse(url):
     ########################################################
     while True:
         try:
-            soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers).content, 'html.parser')
+            soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers, timeout=10).content, 'html.parser')
             title = soup.findAll('h1')[0].text.strip()
             try:
                 price = soup.select("span.ma-ref-price")[0].text.replace("\\n", "").strip()
@@ -127,21 +133,14 @@ def product_parse(url):
             data['product_min_order'] = min_order
             data['product_unit'] = unit
 
-            keys = soup.find_all('dt', class_='do-entry-item')
-            [keys.append(k) for k in soup.find_all('dt', class_="do-entry-item-key")]
-            values = soup.find_all('dd', class_='do-entry-item-val')
 
-            keys = [str(k.text).replace(":", "").strip().replace("\\n", "") for k in keys]
-            keys = [" ".join(k.split()) for k in keys]
+            parts = soup.find_all('dl', class_="do-entry-item")
+            for p in parts:
+                key = re.sub(' +', ' ', p.find('dt').text.strip().replace(':','').replace("\\n", "").replace('\n',''))
+                value = re.sub(' +', ' ', p.find('dd').text.strip().replace("\\n", "").replace('\n',''))
+                if not 'picture' in str(key):
+                    data[('product_' + str(key)).replace(' ','_')] = value
 
-            values = [str(v.text).replace(":", "").strip().replace("\\n", "") for v in values]
-            values = [" ".join(v.split()) for v in values]
-
-            # remove pictrue fields and leadTime fields
-            keys = [k for k in keys if not "picture" in str(k)]
-
-            for i in range(0, min(len(keys), len(values))):
-                data[keys[i]] = values[i]
 
             company_url = soup.select('div.card-footer')[0].find('a').attrs['href']
             data['company_url'] = company_url
@@ -195,16 +194,10 @@ def main_parse(urls):
                     if (e.code == 403):
                         proxy, useragent = change_proxy()
                         headers['User-Agent'] = useragent
-                        print('********************************************')
-                        print('Changing Proxy ... ' + proxy)
-                        print('********************************************')
                         continue
                 except:
                     proxy, useragent = change_proxy()
                     headers['User-Agent'] = useragent
-                    print('********************************************')
-                    print('Changing Proxy ... ' + proxy)
-                    print('********************************************')
                     print('Error Occurred in main_parse function and try again')
                     continue
 

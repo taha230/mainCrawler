@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d1c021a-64bc-4c71-a687-9616be807a70" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/tabletojson.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/alibaba.py" beforeDir="false" afterPath="$PROJECT_DIR$/alibaba.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,7 +29,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="267">
+            <state relative-caret-position="-789">
               <caret line="191" lean-forward="true" selection-start-line="191" selection-end-line="191" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
@@ -39,11 +41,29 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/alibaba.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="311">
-              <caret line="83" column="12" selection-start-line="83" selection-start-column="12" selection-end-line="83" selection-end-column="12" />
+            <state relative-caret-position="330">
+              <caret line="87" column="44" selection-start-line="87" selection-start-column="44" selection-end-line="87" selection-end-column="44" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file:///usr/lib/python3/dist-packages/requests/adapters.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="200">
+              <caret line="507" selection-start-line="507" selection-end-line="507" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tabletojson.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="198">
+              <caret line="9" column="16" selection-start-line="9" selection-start-column="16" selection-end-line="9" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -94,6 +114,7 @@
         <option value="$PROJECT_DIR$/eworldtrade/eworldtrade/spiders/eworldtradespider.py" />
         <option value="$PROJECT_DIR$/get_size.py" />
         <option value="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" />
+        <option value="$PROJECT_DIR$/tabletojson.py" />
         <option value="$PROJECT_DIR$/alibaba.py" />
       </list>
     </option>
@@ -264,7 +285,7 @@
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.13169399" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13169399" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -301,11 +322,16 @@
           <line>266</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/alibaba.py</url>
+          <line>85</line>
+          <option name="timeStamp" value="60" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="soup.find_all('tr', class_='icbu-shop-table-col-item', recursive=True)" language="Python" />
+        <watch expression="html_to_json(str(soup.select('table.company-basicInfo')[0]))" language="Python" />
       </configuration>
     </watches-manager>
   </component>
@@ -324,52 +350,52 @@
     </expressions>
     <expressions id="watch">
       <expression>
-        <expression-string>soup.find_all('tr', class_='icbu-shop-table-col-item', recursive=True)</expression-string>
+        <expression-string>html_to_json(str(soup.select('table.company-basicInfo')[0]))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find_all('tr', class_='icbu-shop-table-col-item')</expression-string>
+        <expression-string>html_to_json(str(soup.select('table.companybasicInfo')[0]))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.select('tr.icbu-shop-table-col-item')</expression-string>
+        <expression-string>html_to_json(str(soup.select('.infoList-mod-field')[6].find('table')))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.select('tr.icbu-shop-table-col')</expression-string>
+        <expression-string>html_to_json(str(soup.select('.infoList-mod-field')[5].find('table')))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.select('.icbu-shop-table-col')</expression-string>
+        <expression-string>html_to_json(str(soup.select('.infoList-mod-field')[4].find('table')))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>[i.find('div').find('span').text.strip() for i in soup.select('.icbu-shop-table-col')[0].select('td.content')]</expression-string>
+        <expression-string>html_to_json(str(soup.select('.infoList-mod-field')[3].find('table')))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>[i.find('div').find('span').text.strip() for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
+        <expression-string>html_to_json(str(soup.select('.infoList-mod-field')[2].find('table')))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>[i.find('div').find('span').text.split() for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
+        <expression-string>html_to_json(str(soup.select('.infoList-mod-field')[1].find('table')))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>[i.find('div').find('span') for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
+        <expression-string>html_to_json(str(soup.select('.infoList-mod-field')[0].find('table')))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>[i.find('div') for i in soup.select('.icbu-shop-table-col')[0].select('td.title')]</expression-string>
+        <expression-string>html_to_json(soup.select('.infoList-mod-field')[0].find('table'))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -497,23 +523,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/lib/python3/dist-packages/requests/adapters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="507" selection-start-line="507" selection-end-line="507" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="267">
-          <caret line="191" lean-forward="true" selection-start-line="191" selection-end-line="191" />
-          <folding>
-            <element signature="e#24#37#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
@@ -531,10 +540,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tabletojson.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="9" column="16" selection-start-line="9" selection-start-column="16" selection-end-line="9" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3/dist-packages/requests/adapters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="507" selection-start-line="507" selection-end-line="507" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-789">
+          <caret line="191" lean-forward="true" selection-start-line="191" selection-end-line="191" />
+          <folding>
+            <element signature="e#24#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/alibaba.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="311">
-          <caret line="83" column="12" selection-start-line="83" selection-start-column="12" selection-end-line="83" selection-end-column="12" />
+        <state relative-caret-position="330">
+          <caret line="87" column="44" selection-start-line="87" selection-start-column="44" selection-end-line="87" selection-end-column="44" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
