@@ -113,6 +113,9 @@ def company_parse(url,data):
                 if values[i] is not None and values[i] != 'Hidden':
                     data[('company_' + str(keys[i])).replace(' ','_')] = values[i]
 
+            #company basic info
+            basicinfo = html_to_json(str(soup.select('table.company-basicInfo')[0]))
+            data['company_basic_info'] = basicinfo
 
             #extract data from tables
             parts = soup.select('.infoList-mod-field')
@@ -120,18 +123,18 @@ def company_parse(url,data):
                 title = p.find('h3').text.strip()
                 table = html_to_json(str(p.find('table', recursive=True)))
                 if(isListEmpty(table)):
-                    data['company_' + str(title)] = data
+                    data[('company_' + str(title)).replace(' ','_')] = data
 
             data = None
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                #headers['User-Agent'] = useragent
+                headers['User-Agent'] = useragent
                 continue
         except:
             proxy, useragent = change_proxy()
-            #headers['User-Agent'] = useragent
+            headers['User-Agent'] = useragent
             print('Error Occurred in company_parse function and try again')
             continue
 
@@ -154,16 +157,15 @@ def product_parse(url):
             html = requests.get(str(url), proxies={'http': proxy}, headers=headers).text
             soup = BeautifulSoup(html, 'html.parser')
 
+            title, price, min_order, unit = None,None,None,None
             title = soup.findAll('h1')[0].text.strip()
+
             try:
                 price = soup.select("span.ma-ref-price")[0].text.replace("\\n", "").strip()
                 min_order = soup.select("span.ma-min-order")[0].text.strip()
                 unit = soup.select("span.ma-min-order")[0].text.strip().split('/')[1]
             except:
-                print('Not found price and min order of product')
-                proxy, useragent = change_proxy()
-                #headers['User-Agent'] = useragent
-                continue
+                pass
 
             if title:
                 data['product_name'] = title
@@ -193,13 +195,13 @@ def product_parse(url):
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                #headers['User-Agent'] = useragent
+                headers['User-Agent'] = useragent
                 continue
-        # except:
-        #     proxy, useragent = change_proxy()
-        #     headers['User-Agent'] = useragent
-        #     print('Error Occurred in product_parse function and try again')
-        #     continue
+        except:
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in product_parse function and try again')
+            continue
 
         else:
             break
@@ -229,7 +231,7 @@ def main_parse(urls):
 
                     if(len(items) == 0):
                         proxy, useragent = change_proxy()
-                        #headers['User-Agent'] = useragent
+                        headers['User-Agent'] = useragent
                         print('cant get list of products')
                         continue
 
@@ -242,13 +244,13 @@ def main_parse(urls):
                     print(e)
                     if (e.code == 403):
                         proxy, useragent = change_proxy()
-                        #headers['User-Agent'] = useragent
+                        headers['User-Agent'] = useragent
                         continue
-                # except:
-                #     proxy, useragent = change_proxy()
-                #     #headers['User-Agent'] = useragent
-                #     print('Error Occurred in main_parse function and try again')
-                #     continue
+                except:
+                    proxy, useragent = change_proxy()
+                    headers['User-Agent'] = useragent
+                    print('Error Occurred in main_parse function and try again')
+                    continue
 
                 else:
                     break
