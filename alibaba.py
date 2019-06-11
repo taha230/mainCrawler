@@ -50,9 +50,14 @@ def change_proxy():
     while True:
         resp = requests.get(url=url, params=params)
         if resp.status_code == 200:
-            resp = requests.get(url='', )
             data = json.loads(resp.text)
-            break
+            headers['User-Agent'] = data['randomUserAgent']
+            resp = requests.get(url='https://www.alibaba.com/Products', proxies={'http': data['proxy']}, headers=headers)
+            if resp.status_code == 200:
+                break
+            else:
+                print('Proxy not Working ... Trying new one.')
+                continue
         else:
             print('Proxy not Working ... Trying new one.')
             continue
@@ -91,11 +96,8 @@ def company_parse(url,data):
     while True:
         try:
             #company description
-            req = urlrequest.Request(str(url))
-            req.set_proxy(proxy, 'http')
-            req.add_header('User-Agent', useragent)
-            response = urlrequest.urlopen(req, timeout=5)
-            soup = BeautifulSoup(response.read().decode('utf8'), 'html.parser')
+            html = requests.get(str(url), proxies={'http': proxy}, headers=headers).text
+            soup = BeautifulSoup(html, 'html.parser')
 
             company_name = soup.select('span.title-text')[0].text.strip()
             company_join_year = soup.findAll('span', class_='join-year')[0].find('span').text.strip()
@@ -149,11 +151,8 @@ def product_parse(url):
     ########################################################
     while True:
         try:
-            req = urlrequest.Request(str(url))
-            req.set_proxy(proxy, 'http')
-            req.add_header('User-Agent', useragent)
-            response = urlrequest.urlopen(req, timeout=5)
-            soup = BeautifulSoup(response.read().decode('utf8'), 'html.parser')
+            html = requests.get(str(url), proxies={'http': proxy}, headers=headers).text
+            soup = BeautifulSoup(html, 'html.parser')
 
             title = soup.findAll('h1')[0].text.strip()
             try:
@@ -216,18 +215,15 @@ def main_parse(urls):
     description: first level of crawling
     '''
     proxy, useragent = change_proxy()
-    #headers['User-Agent'] = useragent
+    headers['User-Agent'] = useragent
     ########################################################
     for url in urls:
         # Products
         for i in range(1, 101):
             while True:
                 try:
-                    req = urlrequest.Request(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i))
-                    req.set_proxy(proxy, 'http')
-                    req.add_header('User-Agent', useragent)
-                    response = urlrequest.urlopen(req, timeout=5)
-                    soup = BeautifulSoup(response.read().decode('utf8'), 'html.parser')
+                    html = requests.get(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i), proxies={'http': proxy}, headers=headers).text
+                    soup = BeautifulSoup(html, 'html.parser')
 
                     items = soup.find_all('h2', class_='title')
 
