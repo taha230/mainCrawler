@@ -21,13 +21,14 @@ headers = {
     'referer': ''
 }
 ##################################################
-def change_proxy(urlCategory):
+def change_proxy():
     '''
     function_name: change_proxy
     input: none
     output: none
     description: change proxy with proxyrotator api
     '''
+
     url = 'http://falcon.proxyrotator.com:51337/'
 
     params = dict(
@@ -36,24 +37,13 @@ def change_proxy(urlCategory):
 
     print('********************************************')
     data = ''
-    while True:
-        resp = requests.get(url=url, params=params)
-        if resp.status_code == 200:
-            data = json.loads(resp.text)
-            headers['User-Agent'] = data['randomUserAgent']
-            resp = requests.get(url='https://www.globalsources.com/gsol/I/Automobile-manufacturers/b/2000000003844/3000000151250/-1.htm?view=grid', proxies={'http': data['proxy']}, headers=headers, verify=False)
-            if resp.status_code == 200:
-                break
-            else:
-                print('Proxy not Working ... Trying new one.')
-                continue
-        else:
-            print('Proxy not Working ... Trying new one.')
-            continue
+    resp = requests.get(url=url, params=params)
+    data = json.loads(resp.text)
 
     print('Changing Proxy ... ' + data['proxy'])
     print('********************************************')
     return data['proxy'], data['randomUserAgent']
+
 
 ###########################################################
 def read_category_url():
@@ -64,7 +54,7 @@ def read_category_url():
     description: add categories to urls from CategoriesLinks_globalresources.txt file
     '''
 
-    file = open('CategoriesLinks_globalresources.txt', 'r')
+    file = open('CategoriesLinks_indiamart.txt', 'r')
     categories = file.read().split('\n')
 
 
@@ -77,16 +67,7 @@ def read_category_url():
     return urls
 ############################################################
 ############################################################
-def product_parse(urls):
-    '''
-    function_name: product_parse
-    input: url
-    output: none
-    description: crawl product page
-    '''
 
-###########################################################
-###########################################################
 def main_parse(urls):
     '''
     function_name: main_parse
@@ -98,14 +79,15 @@ def main_parse(urls):
     ########################################################
     for url in urls:
         # categories
-        proxy, useragent = change_proxy(url)
-        headers['User-Agent'] = useragent
+        # taha
+        proxy, useragent = change_proxy()
+        s = requests.session()
+        s.headers.update({'User-Agent': useragent})
+
         while True:
             try:
 
-                req = urlrequest.Request(str(url))
-                req.set_proxy(proxy, 'http')
-                req.add_header('User-Agent', useragent)
+
                 # try:
                 #     response = urlrequest.urlopen(req, timeout=5)
                 # except SocketError as e:
@@ -115,28 +97,21 @@ def main_parse(urls):
                 #
                 #
                 # soup = BeautifulSoup(response.read().decode('utf8'), 'html.parser')
-                resp = requests.get(url=str(url), proxies={'http': proxy}, headers=headers, verify=False)
-                soup = BeautifulSoup(resp.content, 'html.parser')
+                html = s.get(str(url), proxies={'http': proxy}).content
+                soup = BeautifulSoup(html, 'html.parser')
 
                 #u1 = urllib.urlretrieve(str(url))
                 #soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers).content, 'html.parser')
                 items = soup.find_all('div', recursive=True)
                 #items_urls = [i.find('a').attrs['href'] for i in items]
                 ls = soup.select('div.image_tit')
-                if(not ls):
-                    print('not founding')
-                    proxy, useragent = change_proxy()
-                    headers['User-Agent'] = useragent
-                    continue
 
-                #for iu in items_urls:
-                #    product_parse(iu)
 
 
             except urllib.error.HTTPError as e:
                 if (e.code == 403):
                     proxy, useragent = change_proxy()
-                    headers['User-Agent'] = useragent
+                    s.headers.update({'User-Agent': useragent})
                     continue
 
             # except:
