@@ -14,9 +14,6 @@ headers = {
     'Content-Type': 'text/html',
 }
 
-manager = multiprocessing.Manager()
-final_list = manager.list()
-
 f = open('alibaba_result.json','a')
 ##################################################
 def isListEmpty(inList):
@@ -74,8 +71,8 @@ def create_category_url():
     '''
     function_name: create_category_url
     input: none
-    output: start_urls for scrapy
-    description: add products to urls from products_alibaba.json file
+    output: list
+    description: get link of all categories page in alibaba.com
     '''
     soup = BeautifulSoup(requests.get("https://www.alibaba.com/Products").content, 'html.parser')
     lis = soup.find_all('li')
