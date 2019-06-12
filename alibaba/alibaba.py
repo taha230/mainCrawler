@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-import scrapy
-from scrapy.crawler import CrawlerProcess
 import json
-import urllib
-from urllib import request as urlrequest
-from socket import timeout
 import multiprocessing
 import re
 import requests
-from requests.adapters import HTTPAdapter
+import urllib
+import multiprocessing
 from tabletojson import table_to_json, table_to_json_complex
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
 ##################################################
 ##################################################
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
     'Content-Type': 'text/html',
 }
+
+manager = multiprocessing.Manager()
+final_list = manager.list()
+
+f = open('alibaba_result.json','a')
 ##################################################
 def isListEmpty(inList):
     '''
@@ -29,9 +29,25 @@ def isListEmpty(inList):
     if isinstance(inList, list): # Is a list
         return all( map(isListEmpty, inList))
     return False # Not a list
-
 ##################################################
-def change_proxy():
+def chunkIt(seq, num):
+    '''
+    function_name: chunkIt
+    input: list, number of parts
+    output: list of lists
+    description: split list with approximate num of elements in each parts
+    '''
+    avg = len(seq) / float(num)
+    out = []
+    last = 0.0
+
+    while last < len(seq):
+        out.append(seq[int(last):int(last + avg)])
+        last += avg
+
+    return out
+###################################################
+def change_proxy(index):
     '''
     function_name: change_proxy
     input: none
@@ -44,13 +60,13 @@ def change_proxy():
         apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
     )
 
-    print('********************************************')
+    print(f'Process {index}: ********************************************')
     data = ''
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
 
-    print('Changing Proxy ... ' + data['proxy'])
-    print('********************************************')
+    print(f'Process {index}: Changing Proxy ... ' + data['proxy'])
+    print(f'Process {index}: ********************************************')
     return data['proxy'], data['randomUserAgent']
 
 ###########################################################
@@ -70,7 +86,7 @@ def create_category_url():
     return urls
 ############################################################
 ############################################################
-def company_parse(url,data, s):
+def company_parse(index, url,data, s):
     '''
     function_name: product_parse
     input: url
@@ -118,24 +134,26 @@ def company_parse(url,data, s):
                     if(len(table) > 0):
                         data[('company_' + str(title)).replace(' ','_')] = table
 
-            data = None
+            ###read data to file
+            f.write(json.dumps(data))
+            f.write('\n')
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
-                proxy, useragent = change_proxy()
+                proxy, useragent = change_proxy(index)
                 s.headers.update({'User-Agent': useragent})
                 continue
         except:
-            proxy, useragent = change_proxy()
+            proxy, useragent = change_proxy(index)
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in company_parse function and try again')
+            print(f'Process {index}: Error Occurred in company_parse function and try again')
             continue
 
         else:
             break
 ############################################################
 ############################################################
-def product_parse(url, s):
+def product_parse(index, url, s):
     '''
     function_name: product_parse
     input: url
@@ -182,18 +200,18 @@ def product_parse(url, s):
             company_url = soup.select('div.card-footer')[0].find('a').attrs['href']
             data['company_url'] = company_url
 
-            company_parse(company_url, data, s)
+            company_parse(index, company_url, data, s)
 
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
-                proxy, useragent = change_proxy()
+                proxy, useragent = change_proxy(index)
                 s.headers.update({'User-Agent': useragent})
                 continue
         except:
-            proxy, useragent = change_proxy()
+            proxy, useragent = change_proxy(index)
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in product_parse function and try again')
+            print(f'Process {index}: Error Occurred in product_parse function and try again')
             continue
 
         else:
@@ -202,14 +220,14 @@ def product_parse(url, s):
 
 ###########################################################
 ###########################################################
-def main_parse(urls):
+def main_parse(index, urls):
     '''
     function_name: main_parse
     input: list
     output: none
     description: first level of crawling
     '''
-    proxy, useragent = change_proxy()
+    proxy, useragent = change_proxy(index)
     s = requests.session()
     s.headers.update({'User-Agent': useragent})
     ########################################################
@@ -224,26 +242,26 @@ def main_parse(urls):
                     items = soup.find_all('h2', class_='title')
 
                     if(len(items) == 0):
-                        proxy, useragent = change_proxy()
+                        proxy, useragent = change_proxy(index)
                         s.headers.update({'User-Agent': useragent})
-                        print('cant get list of products')
+                        print(f'Process {index}: cant get list of products')
                         continue
 
                     items_urls = [i.find('a').attrs['href'] for i in items]
 
                     for iu in items_urls:
-                        product_parse("https:" + str(iu), s)
+                        product_parse(index, "https:" + str(iu), s)
 
                 except urllib.error.HTTPError as e:
                     print(e)
                     if (e.code == 403):
-                        proxy, useragent = change_proxy()
+                        proxy, useragent = change_proxy(index)
                         headers['User-Agent'] = useragent
                         continue
                 except:
-                    proxy, useragent = change_proxy()
+                    proxy, useragent = change_proxy(index)
                     s.headers.update({'User-Agent': useragent})
-                    print('Error Occurred in main_parse function and try again')
+                    print(f'Process {index}: Error Occurred in main_parse function and try again')
                     continue
 
                 else:
@@ -252,5 +270,22 @@ def main_parse(urls):
 ############################################################
 ############################################################
 ############################################################
+f = open('alibaba_result.json','a')
+
 urls = create_category_url()
-main_parse(urls)
+parts = chunkIt(urls, 5)
+
+processes = []
+
+for i in [0,1,2,3,4]:
+    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
+
+
+for p in processes:
+    p.start()
+
+for p in processes:
+    p.join()
+
+
+f.close()
