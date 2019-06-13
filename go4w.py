@@ -137,16 +137,171 @@ def create_category_url():
         #return urls
 
     return urls
+
 ############################################################
+def tokenize_buyer_or_supplier_text(result):
+    '''
+    function_name: tokenize_buyer_or_supplier_text
+    input: json
+    output: json
+    description: tokenize the supplierText or buyerText
+    '''
+
+    newResult = {}  # json to add MongoDB
+
+    if (result['isSupplier']):
+
+        try:
+
+            #####Extract information from 'supplierText' string
+            temp = str(result['supplierText'])[2:-2]
+            temp = re.sub(' +', ' ', temp)
+            tokens_ = temp.split("\\r\\n")
+            for t in tokens_:
+                clean_t_ = t.split(":")
+                if (len(clean_t_) == 2 and len(clean_t_[0].replace('\\n', '').replace(' ', '').strip()) > 0 and len(
+                        clean_t_[1].replace(' ', '').replace('\\n', '').strip()) > 0):
+                    newResult[str(clean_t_[0].replace('\\n', '').replace(' ', '').replace('.', '').strip())] = clean_t_[
+                        1].replace(' ', '').replace('\\n', '').strip()
+
+        except:
+            pass
+
+    elif (result['isBuyer']):
+
+        #####Extract information from 'buyerText' string
+        temp = str(result['buyerText'])[2:-2]
+        temp = re.sub(' +', ' ', temp)
+        tokens_ = temp.split("\\r\\n")
+        for t in tokens_:
+            clean_t_ = t.split(":")
+        if (len(clean_t_) == 2 and len(clean_t_[0].replace('\\n', '').replace(' ', '').strip()) > 0 and len(
+                clean_t_[1].replace('\\n', '').replace(' ', '').strip()) > 0):
+            newResult[str(clean_t_[0].replace('\\n', '').replace(' ', '').strip())] = clean_t_[1].replace('\\n',
+                                                                                                          '').replace(
+                ' ', '').strip()
+
+
+    return newResult
+
+    # update result document in MongoDB
+    # if (newResult != {}):
+    # self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
+
 ############################################################
-def buyerCrawler(url, s):
+def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
+    '''
+    function_name: nestedURLBuyerCompanyCrawler
+    input: response
+    output: json
+    description: crawl all inforamtion from company nested url
+    '''
+
+    while True:
+        try:
+            html = s.get(str(url), proxies={'http': proxy}).content
+            soup = BeautifulSoup(html, 'html.parser')
+            mainTabList = soup.find('ul', class_="nav nav-pills center-pills").find_all('li')
+
+            isOurCompanySelected, isProductsSelected, isManagementSelected, isFacilitiesSelector, isNewsRoomSelector = None, None, None, None, None
+
+            for  i in range(len(mainTabList)):
+                if ('Company' in mainTabList[i].find('a').text):
+                    isOurCompanySelected = mainTabList[i].find('a')['href']
+                elif ('Products' in mainTabList[i].find('a').text):
+                    isProductsSelected = mainTabList[i].find('a')['href']
+                elif ('Management' in mainTabList[i].find('a').text):
+                    isManagementSelected = mainTabList[i].find('a')['href']
+                elif ('Facilities' in mainTabList[i].find('a').text):
+                    isFacilitiesSelector = mainTabList[i].find('a')['href']
+                elif ('News' in mainTabList[i].find('a').text):
+                    isNewsRoomSelector = mainTabList[i].find('a')['href']
+
+            if ("html" in str(isOurCompanySelected) and (str(isOurCompanySelected)[2:-2] in response.request.url)):  # the second condition for nested page in company page
+
+                companyLogo = None
+                if (soup.find('div', class_= "nopadding  mar-top-10 col-xs-offset-0 col-xs-11 gold-menu text-center")):
+                    companyLogo = soup.find('div', class_= "nopadding  mar-top-10 col-xs-offset-0 col-xs-11 gold-menu text-center").find('img')['src']
+
+                annualSalesBTagsList = None
+                if (soup.find('div', class_="padd-lr-10 mar-top-10 ")):
+                    annualSalesBTagsList = soup.find_all('div', class_="padd-lr-10 mar-top-10 ").find('b').text
+
+                annualSalesBTagsValueList = None
+                if (soup.find('div', class_="padd-lr-10 mar-top-10 ")):
+                    annualSalesBTagsValueList = clean_backslashN_array(soup.find_all('div', class_="padd-lr-10 mar-top-10 ").text)
+
+                ourCompanyText = None
+                if (soup.find('div', class_="col-xs-12")):
+                    ourCompanyText = soup.find('div', class_="col-xs-12").text
+
+                contactDetailText = None
+                if (soup.find('div', class_="padd-lr-10 mar-top-10 ")):
+                    contactDetailText = soup.find_all('div', class_="padd-lr-10 mar-top-10 ").find('address').text.replace('<address>',
+                                                                                                      '').replace(
+                    '</address>', '').replace('<br>', ',').replace('<b>', ',').replace('</b>', ',')
+
+                newResult = {}
+                newResult['logoSrc'] = self.clean_text_(str(companyLogo))
+                newResult['ourCompany'] = self.clean_text_(ourCompanyText)
+                newResult['contactDetail'] = self.clean_text_(contactDetailText)
+
+                for i in range(len(annualSalesBTagsList)):
+                    if i < len(annualSalesBTagsValueList):
+                        newResult[str(annualSalesBTagsList[i])] = annualSalesBTagsValueList[i].replace(' : ', '')
+
+            #############################################################################################################
+            if ((str(isOurCompanySelected)[2:-2] not in response.request.url) and ("html" in str(isOurCompanySelected))):
+                nestedURLOurCompany = "https://www.go4worldbusiness.com" + str(isOurCompanySelected)[2:-2]
+                # yield scrapy.Request(url=nestedURLOurCompany, callback=self.nestedURLOurCompanyCrawler,
+                #                      meta={'inputJson': result})
+            if ("html" in str(isProductsSelected)):
+                nestedURLProductsCompany = "https://www.go4worldbusiness.com" + str(isProductsSelected)[2:-2]
+                # yield scrapy.Request(url=nestedURLProductsCompany, callback=self.nestedURLProductsCompanyCrawler,
+                #                      meta={'inputJson': result})
+            if ("html" in str(isManagementSelected)):
+                nestedURLManagementCompany = "https://www.go4worldbusiness.com" + str(isManagementSelected)[2:-2]
+                # yield scrapy.Request(url=nestedURLManagementCompany,
+                #                      callback=self.nestedURLManagementCompanyCrawler,
+                #                      meta={'inputJson': result})
+            if ("html" in str(isFacilitiesSelector)):
+                nestedURLFaculitiesCompany = "https://www.go4worldbusiness.com" + str(isFacilitiesSelector)[2:-2]
+                # yield scrapy.Request(url=nestedURLFaculitiesCompany,
+                #                      callback=self.nestedURLFacilitiesCompanyCrawler,
+                #                      meta={'inputJson': result})
+            if ("html" in str(isNewsRoomSelector)):
+                nestedURLNewsRoomCompany = "https://www.go4worldbusiness.com" + str(isNewsRoomSelector)[2:-2]
+                # yield scrapy.Request(url=nestedURLNewsRoomCompany, callback=self.nestedURLNewsRoomCompanyCrawler,
+                #                      meta={'inputJson': result})
+
+
+
+        except urllib.error.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                s.headers.update({'User-Agent': useragent})
+                continue
+        except:
+            proxy, useragent = change_proxy()
+            s.headers.update({'User-Agent': useragent})
+            print('Error Occurred in supplierCrawler function and try again')
+            continue
+
+        else:
+            break
+
+
+
+
+
+########################################################################
+def buyerCrawler(url, s, proxy):
     '''
     function_name: buyerCrawler
     input: response
     output: crawlerDataset
     description: crawl all information from buyer in www.go4worldbusiness.com
     '''
-    proxy, useragent = '',''
 
     ########################################################
     while True:
@@ -210,14 +365,13 @@ def buyerCrawler(url, s):
 
 ###########################################################
 ###########################################################
-def supplierCrawler(url, s):
+def supplierCrawler(url, s, proxy):
     '''
     function_name: supplierCrawler
     input: response
     output: crawlerDataset
     description: crawl all information from supplier in www.go4worldbusiness.com
     '''
-    proxy, useragent = '', ''
 
     ########################################################
     while True:
@@ -267,6 +421,14 @@ def supplierCrawler(url, s):
                     'Key': Key,
                     'searchCategory': searchCategory
                 }
+
+                if (result['supplierCompanyLink'] != []):  # crawl nested company link for cases have supplier company link
+                    newResutl = tokenize_buyer_or_supplier_text(result)
+                    nestedURLCompany = "https://www.go4worldbusiness.com" + str(result['supplierCompanyLink'])
+                    nestedResult = nestedURLGeneralCompanyCrawler (nestedURLCompany, result, s, proxy)
+
+                # outJson.append(result)
+
 
 
         except urllib.error.HTTPError as e:
@@ -325,7 +487,7 @@ def main_parse(urls):
 
                     for i in range(TotalPageNum):
                         nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
-                        buyerCrawler(nextPageURL, s)
+                        buyerCrawler(nextPageURL, s, proxy)
 
 
                 ###############################################################################
@@ -340,7 +502,7 @@ def main_parse(urls):
 
                     for i in range(TotalPageNum):
                         nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
-                        supplierCrawler(nextPageURL, s)
+                        supplierCrawler(nextPageURL, s, proxy)
 
             except urllib.error.HTTPError as e:
                 print(e)

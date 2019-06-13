@@ -144,7 +144,6 @@ class go4wSpider(scrapy.Spider):
                     clean_t_ = t.split(":")
                     if (len(clean_t_) == 2 and len(clean_t_[0].replace('\\n', '').replace(' ','').strip()) > 0 and len(clean_t_[1].replace(' ','').replace('\\n', '').strip()) >0):
                         newResult[str(clean_t_[0].replace('\\n', '').replace(' ','').replace('.','').strip())] = clean_t_[1].replace(' ','').replace('\\n', '').strip()
-                        #newResult['a'] = clean_t_[1].replace(' ','').replace('\\n', '').strip()
 
             except:
                 pass
