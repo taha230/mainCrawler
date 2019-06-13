@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d1c021a-64bc-4c71-a687-9616be807a70" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go4w.py" beforeDir="false" afterPath="$PROJECT_DIR$/go4w.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py" beforeDir="false" afterPath="$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,12 +15,17 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/go4w.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="239">
-              <caret line="241" column="59" selection-start-line="241" selection-start-column="59" selection-end-line="241" selection-end-column="59" />
+            <state relative-caret-position="163">
+              <caret line="450" column="33" selection-start-line="450" selection-start-column="33" selection-end-line="450" selection-end-column="33" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
                 <element signature="e#747#1000#0" />
                 <element signature="e#1077#1643#0" />
+                <element signature="e#7478#9634#0" />
+                <element signature="e#8433#9220#0" />
+                <element signature="e#9376#10163#0" />
+                <element signature="e#10307#11094#0" />
+                <element signature="e#11238#12025#0" />
               </folding>
             </state>
           </provider>
@@ -32,7 +35,7 @@
         <entry file="file://$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="311">
-              <caret line="211" column="38" selection-start-line="211" selection-start-column="38" selection-end-line="211" selection-end-column="38" />
+              <caret line="226" column="96" selection-start-line="226" selection-start-column="13" selection-end-line="226" selection-end-column="96" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -80,6 +83,7 @@
       <find>underline-none</find>
       <find>nav-pills center-pills</find>
       <find>nestedURLGeneralCompanyCrawler</find>
+      <find>padd-lr-10 mar-top-10 &quot;</find>
     </findStrings>
     <replaceStrings>
       <replace>#self.collection_go4w_data</replace>
@@ -191,18 +195,18 @@
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.13169399" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13169399" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32937366" />
-      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.32289416" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.32289416" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32937366" />
-      <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49945354" weight="0.33405173" />
+      <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49945354" weight="0.3336933" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50054646" side_tool="true" weight="0.32937366" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32937366" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -292,9 +296,8 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="s.get(str(url), proxies={'http': proxy}).content" language="Python" />
-        <watch expression="soup.find('div', class_=&quot;nav nav-pills center-pills&quot;)" language="Python" />
-        <watch expression="mainTabList[i].find('a')['href']" language="Python" />
+        <watch expression="tokenize_text(txt)" language="Python" />
+        <watch expression="newResult.items()" language="Python" />
       </configuration>
     </watches-manager>
   </component>
@@ -313,52 +316,52 @@
     </expressions>
     <expressions id="watch">
       <expression>
-        <expression-string>mainTabList[i].find('a')['href']</expression-string>
+        <expression-string>newResult.items()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find('div', class_=&quot;nav nav-pills center-pills&quot;)</expression-string>
+        <expression-string>newResult.items() + result.items() + tokenizedResult.items()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>s.get(str(url), proxies={'http': proxy}).content</expression-string>
+        <expression-string>{key: value for (key, value) in (newResult.items() + result.items() + tokenizedResult.items())}</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find_all('a')[1].text.strip()</expression-string>
+        <expression-string>tokenize_text(txt)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find_all('a').text.strip()</expression-string>
+        <expression-string>soup.find_all('div', class_=&quot;padd-lr-10 mar-top-10&quot;)[0].text</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>supplierCountry</expression-string>
+        <expression-string>div.text()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>str(searchResultSet)</expression-string>
+        <expression-string>div</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>text.replace('\n' , 'taha')</expression-string>
+        <expression-string>soup.find_all('div', class_=&quot;padd-lr-10 mar-top-10&quot;)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>text.replace('\\n' , 'taha')</expression-string>
+        <expression-string>soup.find('div', class_=&quot;padd-lr-10 mar-top-10&quot;)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>clean_text_(str(searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find('a').text.strip()).replace('Buyer Of', ''))</expression-string>
+        <expression-string>soup.find('div', class_=&quot;padd-lr-10 mar-top-10 &quot;)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -534,7 +537,7 @@
     <entry file="file://$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="311">
-          <caret line="211" column="38" selection-start-line="211" selection-start-column="38" selection-end-line="211" selection-end-column="38" />
+          <caret line="226" column="96" selection-start-line="226" selection-start-column="13" selection-end-line="226" selection-end-column="96" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
@@ -543,12 +546,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/go4w.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="239">
-          <caret line="241" column="59" selection-start-line="241" selection-start-column="59" selection-end-line="241" selection-end-column="59" />
+        <state relative-caret-position="163">
+          <caret line="450" column="33" selection-start-line="450" selection-start-column="33" selection-end-line="450" selection-end-column="33" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
             <element signature="e#747#1000#0" />
             <element signature="e#1077#1643#0" />
+            <element signature="e#7478#9634#0" />
+            <element signature="e#8433#9220#0" />
+            <element signature="e#9376#10163#0" />
+            <element signature="e#10307#11094#0" />
+            <element signature="e#11238#12025#0" />
           </folding>
         </state>
       </provider>
