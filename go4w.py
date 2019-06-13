@@ -6,12 +6,11 @@ import urllib
 from urllib import request as urlrequest
 from socket import timeout
 import multiprocessing
-import eventlet
 import re
 import requests
-from tabletojson import html_to_json
+from requests.adapters import HTTPAdapter
+from tabletojson import table_to_json, table_to_json_complex
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from pymongo import MongoClient
 ##################################################
 ##################################################
@@ -47,24 +46,77 @@ def change_proxy():
 
     print('********************************************')
     data = ''
-    while True:
-        resp = requests.get(url=url, params=params)
-        if resp.status_code == 200:
-            data = json.loads(resp.text)
-            headers['User-Agent'] = data['randomUserAgent']
-            resp = requests.get(url='https://www.alibaba.com/Products', proxies={'http': data['proxy']}, headers=headers)
-            if resp.status_code == 200:
-                break
-            else:
-                print('Proxy not Working ... Trying new one.')
-                continue
-        else:
-            print('Proxy not Working ... Trying new one.')
-            continue
+    resp = requests.get(url=url, params=params)
+    data = json.loads(resp.text)
 
     print('Changing Proxy ... ' + data['proxy'])
     print('********************************************')
     return data['proxy'], data['randomUserAgent']
+
+##################################################
+def clean_html(text):
+    '''
+    function_name: clean_html
+    input: text
+    output: clean text from html tags
+    description: remove html tags from text
+    '''
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', text)
+    return cleantext
+
+###################################################
+def clean_text(text):
+    '''
+    function_name: clean_text
+    input: json
+    output: json
+    description: Clean Text from non valid characters for add to database
+    '''
+    json_text = json.loads(json.dumps(text))
+    for att, value in json_text.items():
+        if (not (type(value) == bool)):
+            if (type(value) == list):
+                text_1 = clean_html(str(value)[2:-2])  # remove html tags from text
+                text_2 = text_1.replace("\']", "").replace("[\'", "")
+                text_3 = text_2.lstrip().rstrip()  # remove whitespaces from begin and end of string
+                text_4 = text_3.replace('\\n', '').strip()  # remove new line chracters from string
+                json_text[att] = re.sub(' +', ' ', text_4)
+
+    return json_text
+
+###################################################
+def clean_text_(text):
+    '''
+    function_name: clean_text_
+    input: text
+    output: text
+    description: Clean Text from non valid characters for add to database
+    '''
+    text_1 = clean_html(str(text)[2:-2])  # remove html tags from text
+    text_2 = text_1.lstrip().rstrip()  # remove whitespaces from begin and end of string
+    text_3 = text_2.replace('\\n', '').strip()  # remove new line chracters from string
+    text_4 = re.sub(' +', ' ', text_3)
+    text_5 = text_4.replace('[]', '').strip()  # remove  [] for empty list
+    text_6 = text_5.replace('\']', '').replace('[\'', '')  # remove [' and '] for start and end list
+    text_7 = text_6.replace('\\r', '')  # remove \r from text
+
+    return text_7
+
+###################################################
+def clean_backslashN_array(inputArray):
+    '''
+    function_name: clean_backslashN_array
+    input: array
+    output: cleaned array
+    description: Clean all elements of array have \n
+    '''
+    outArray = []
+    for item in inputArray:
+        if re.match('.*[a-zA-Z0-9].*', str(item)):
+            outArray.append(item)
+
+    return outArray
 
 ###########################################################
 def create_category_url():
@@ -74,187 +126,171 @@ def create_category_url():
     output: start_urls for scrapy
     description: add products to urls from products_alibaba.json file
     '''
-    soup = BeautifulSoup(requests.get("https://www.alibaba.com/Products").content, 'html.parser')
-    lis = soup.find_all('li')
-    urls = [li.find('a') for li in lis if li]
-    urls = [url for url in urls if url is not None]
-    urls = [url.attrs['href'] for url in urls if 'pid' in str(url)]
+    with open('products_go4w.json') as f:
+        products = json.load(f)
+    #print(products[0])
+    urls = []
+    #products = products[0:10]
+    for p in list(products):
+        urls.append("https://www.go4worldbusiness.com/suppliers/" + str(p['name']).replace(',','').replace(' & ',' ').replace(' ',"-"))
+        urls.append("https://www.go4worldbusiness.com/buyers/" + str(p['name']).replace(',','').replace(' & ',' ').replace(' ',"-"))
+        #return urls
 
     return urls
 ############################################################
 ############################################################
-def company_parse(url,data):
+def buyerCrawler(url, s):
     '''
-    function_name: product_parse
-    input: url
-    output: none
-    description: crawl product page
+    function_name: buyerCrawler
+    input: response
+    output: crawlerDataset
+    description: crawl all information from buyer in www.go4worldbusiness.com
     '''
     proxy, useragent = '',''
 
     ########################################################
     while True:
         try:
-            #company description
-            html = requests.get(str(url), proxies={'http': proxy}, headers=headers).text
+            html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
+            buyerList = soup.find_all('div', class_ ="col-xs-12 nopadding search-results")
 
-            company_name = soup.select('span.title-text')[0].text.strip()
-            company_join_year = soup.findAll('span', class_='join-year')[0].find('span').text.strip()
-            company_description = soup.find('div', class_='company-card-desc').find('div').text.strip()
-            data['company_name'] = company_name
-            data['company_join_year'] = company_join_year
-            data['company_description'] = company_description
+            for searchResultSet in buyerList:
+                result = {
+                    'buyerCompanyName': searchResultSet.find('h2',class_="entity-row-title h2-item-title").find('span').text.strip(),
+                    'date': searchResultSet.find('div',class_="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding").find('small').text.strip(),
+                    'buyerProductName': clean_text_(str(searchResultSet.find('h2',class_="text-capitalize entity-row-title h2-item-title").find('span').text.strip())),
+                    'buyerCountry': clean_text_(str(searchResultSet.find('span',class_="pull-left subtitle text-capitalize").text.strip().replace('Buyer From', ''))),
+                    'buyerText': searchResultSet.find('div',class_="col-xs-12 entity-row-description-search xs-padd-lr-5").find('p').text.strip(),
+                    'buyerBuyerOF': clean_text_(str(searchResultSet.find('div', class_="col-xs-12 xs-padd-lr-5").find('div').find('a').text.strip()).replace('Buyer Of', '')),
+                    'buyerCompanyLink': searchResultSet.find('span',class_="pull-left").find('a')['href'],
+                    'isSupplier': False,
+                    'isBuyer': True,
+                    'Key': str(clean_text_(searchResultSet.find('div',class_="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding").find('small').text.strip()) + ' , ' + clean_text_(str(searchResultSet.find('span',class_="pull-left").find('a')['href']))).replace(' ', ''),
+                    'searchCategory': url.replace('https://www.go4worldbusiness.com/find?searchText=', '').replace('&FindBuyers', '')
 
-            #transaction description
-            keys = [i.text.strip() for i in soup.select('div.transaction-detail-title')]
-            values = [i.text.strip() for i in soup.select('div.transaction-detail-content')]
-            for i in range(0, len(values)):
-                if values[i] is not None and values[i] != 'Hidden':
-                    data[('company_' + str(keys[i])).replace(' ','_')] = values[i]
+                }
 
 
-            #extract data from tables
-            parts = soup.select('.infoList-mod-field')
-            for p in parts:
-                title = p.find('h3').text.strip()
-                table = html_to_json(str(p.find('table', recursive=True)))
-                if(isListEmpty(table)):
-                    data['company_' + str(title)] = data
-
-            data = None
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                #headers['User-Agent'] = useragent
+                s.headers.update({'User-Agent': useragent})
                 continue
         except:
             proxy, useragent = change_proxy()
-            #headers['User-Agent'] = useragent
-            print('Error Occurred in company_parse function and try again')
+            s.headers.update({'User-Agent': useragent})
+            print('Error Occurred in buyerCrawler function and try again')
             continue
 
         else:
             break
-############################################################
-############################################################
-def product_parse(url):
+
+###########################################################
+###########################################################
+def supplierCrawler(url, s):
     '''
-    function_name: product_parse
-    input: url
-    output: none
-    description: crawl product page
+    function_name: supplierCrawler
+    input: response
+    output: crawlerDataset
+    description: crawl all information from supplier in www.go4worldbusiness.com
     '''
-    data = {}
-    proxy, useragent = '',''
+    proxy, useragent = '', ''
+
     ########################################################
     while True:
         try:
-            html = requests.get(str(url), proxies={'http': proxy}, headers=headers).text
-            soup = BeautifulSoup(html, 'html.parser')
-
-            title = soup.findAll('h1')[0].text.strip()
-            try:
-                price = soup.select("span.ma-ref-price")[0].text.replace("\\n", "").strip()
-                min_order = soup.select("span.ma-min-order")[0].text.strip()
-                unit = soup.select("span.ma-min-order")[0].text.strip().split('/')[1]
-            except:
-                print('Not found price and min order of product')
-                proxy, useragent = change_proxy()
-                #headers['User-Agent'] = useragent
-                continue
-
-            if title:
-                data['product_name'] = title
-
-            if price:
-                data['product_price'] = price
-
-            if min_order:
-                data['product_min_order'] = min_order
-
-            if unit:
-                data['product_unit'] = unit
-
-            parts = soup.find_all('dl', class_="do-entry-item")
-            for p in parts:
-                key = re.sub(' +', ' ', p.find('dt').text.strip().replace(':','').replace("\\n", "").replace('\n',''))
-                value = re.sub(' +', ' ', p.find('dd').text.strip().replace("\\n", "").replace('\n',''))
-                if not 'picture' in str(key):
-                    data[('product_' + str(key)).replace(' ','_')] = value
-
-            company_url = soup.select('div.card-footer')[0].find('a').attrs['href']
-            data['company_url'] = company_url
-
-            company_parse(company_url, data)
-
+            a=3
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                #headers['User-Agent'] = useragent
+                s.headers.update({'User-Agent': useragent})
                 continue
-        # except:
-        #     proxy, useragent = change_proxy()
-        #     headers['User-Agent'] = useragent
-        #     print('Error Occurred in product_parse function and try again')
-        #     continue
+        except:
+            proxy, useragent = change_proxy()
+            s.headers.update({'User-Agent': useragent})
+            print('Error Occurred in supplierCrawler function and try again')
+            continue
 
         else:
             break
-
-
 ###########################################################
 ###########################################################
 def main_parse(urls):
+
     '''
     function_name: main_parse
     input: list
     output: none
     description: first level of crawling
     '''
+
     proxy, useragent = change_proxy()
-    headers['User-Agent'] = useragent
+    s = requests.session()
+    s.headers.update({'User-Agent': useragent})
+
     ########################################################
     for url in urls:
-        # Products
-        for i in range(1, 101):
-            while True:
-                try:
-                    html = requests.get(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i), proxies={'http': proxy}, headers=headers).text
-                    soup = BeautifulSoup(html, 'html.parser')
+        # categories
 
-                    items = soup.find_all('h2', class_='title')
+        isBuyerSelected, isSupplierSelected = False, False
+        if ("/suppliers/" in str(url)):
+            isSupplierSelected = True
+        if ("/buyers/" in str(url)):
+            isBuyerSelected = True
+        TotalPageNum = 1
 
-                    if(len(items) == 0):
-                        proxy, useragent = change_proxy()
-                        #headers['User-Agent'] = useragent
-                        print('cant get list of products')
-                        continue
+        while True:
+            try:
+                html = s.get(str(url), proxies={'http': proxy}).content
+                soup = BeautifulSoup(html, 'html.parser')
 
-                    items_urls = [i.find('a').attrs['href'] for i in items]
 
-                    for iu in items_urls:
-                        product_parse("https:" + str(iu))
+                ########################################################################
+                if (isBuyerSelected):
+                    lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+                    lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
+                    if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
+                        TotalPageNum = 1
+                    else:
+                        TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1])  # parse the buyer total page number
 
-                except urllib.error.HTTPError as e:
-                    print(e)
-                    if (e.code == 403):
-                        proxy, useragent = change_proxy()
-                        #headers['User-Agent'] = useragent
-                        continue
-                # except:
-                #     proxy, useragent = change_proxy()
-                #     #headers['User-Agent'] = useragent
-                #     print('Error Occurred in main_parse function and try again')
-                #     continue
+                    for i in range(TotalPageNum):
+                        nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
+                        buyerCrawler(nextPageURL, s)
 
-                else:
-                    break
 
-############################################################
-############################################################
+                ###############################################################################
+                elif (isSupplierSelected):
+                    lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+                    lastPageSupplierhref = lastPagelist[len(lastPagelist) - 2].find('a')['href'].strip()
+                    if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
+                        TotalPageNum = 1
+                    else:
+                        TotalPageNum = int(
+                            str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1])  # parse the supplier total page number
+
+                    for i in range(TotalPageNum):
+                        nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
+                        supplierCrawler(nextPageURL, s)
+
+            except urllib.error.HTTPError as e:
+                print(e)
+                if (e.code == 403):
+                    proxy, useragent = change_proxy()
+                    s.headers.update({'User-Agent': useragent})
+                    continue
+            except:
+                proxy, useragent = change_proxy()
+                s.headers.update({'User-Agent': useragent})
+                print('Error Occurred in main_parse function and try again')
+                continue
+
+            else:
+                break
+
 ############################################################
 urls = create_category_url()
 main_parse(urls)

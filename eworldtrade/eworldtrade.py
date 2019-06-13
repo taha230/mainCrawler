@@ -2,12 +2,14 @@
 import json
 import multiprocessing
 import re
+from incapsula import IncapSession
 import requests
 import urllib
 import multiprocessing
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from incapsula import IncapSession
+import time
 ##################################################
 ##################################################
 headers = {
@@ -76,25 +78,61 @@ def create_category_url():
     description: get link of all top categories page in eworldtrade.com
     '''
     proxy, useragent = change_proxy()
-    s = requests.session()
-    s.headers.update({'User-Agent': useragent})
+    s = IncapSession()
+    s.headers['User-Agent'] = useragent
+    s.headers['Referer'] = 'https://www.hardwareshow-china.com/'
+    s.headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3'
+    s.headers['Upgrade-Insecure-Requests'] = '0'
 
-    html = s.get("https://www.eworldtrade.com/products/", proxies={'http': proxy}).content
-    soup = BeautifulSoup(html, 'html.parser')
-    h5s = soup.find_all('h5')
+    while True:
+        try:
+            html = s.get("https://www.eworldtrade.com/products/", proxies={'http': proxy}).content
+            soup = BeautifulSoup(html, 'html.parser')
+            h5s = soup.find_all('h5')
+            if(len(h5s)>0):
+                break
+            proxy, useragent = change_proxy()
+            s.headers['User-Agent'] = useragent
+        except:
+            continue
+
     urls = [h5.find('a').attrs['href'] for h5 in h5s if h5.find('a')]
 
-    return get_links_of_categories(urls)
+    return get_links_of_categories(s, proxy, urls)
 ############################################################
-def get_links_of_categories(urls):
+def get_links_of_categories(s, proxy, urls):
     '''
     function_name: get_links_of_categories
     input: list
     output: list
     description: extract links from each product page
     '''
-    #for url in urls:
+    total_urls = []
+    change_proxy_counter = 0
+    for url in urls:
+        try:
+            while True:
+                html = s.get(url, proxies={'http': proxy}).content
+                soup = BeautifulSoup(html, 'html.parser')
+                atags = soup.select('a.text-muted')
+                if (len(atags) > 0 and change_proxy_counter<=5):
+                    change_proxy_counter = change_proxy_counter + 1
+                    print(f'{url} has been done.')
+                    break
 
+                proxy, useragent = change_proxy()
+                s.headers['User-Agent'] = useragent
+                s.headers['Upgrade-Insecure-Requests'] = '0'
+                change_proxy_counter = 0
+        except:
+            proxy, useragent = change_proxy()
+            s.headers['User-Agent'] = useragent
+            s.headers['Upgrade-Insecure-Requests'] = '0'
+            change_proxy_counter = 0
+            continue
+        for a in atags:
+            total_urls.append(a.attrs['href'])
+    return total_urls
 ############################################################
 def company_parse(url,data, s):
     '''
