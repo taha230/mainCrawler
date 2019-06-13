@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d1c021a-64bc-4c71-a687-9616be807a70" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/mainCrawler.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mainCrawler.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go4w.py" beforeDir="false" afterPath="$PROJECT_DIR$/go4w.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,30 +15,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/go4w.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="249">
-              <caret line="161" column="38" lean-forward="true" selection-start-line="161" selection-start-column="38" selection-end-line="161" selection-end-column="38" />
+            <state relative-caret-position="263">
+              <caret line="282" column="13" lean-forward="true" selection-start-line="282" selection-start-column="13" selection-end-line="282" selection-end-column="13" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
                 <element signature="e#747#1000#0" />
                 <element signature="e#1077#1643#0" />
-                <element signature="e#1728#1962#0" />
-                <element signature="e#2048#2793#0" />
-                <element signature="e#2880#3572#0" />
                 <element signature="e#3676#3975#0" />
                 <element signature="e#1736#2385#0" />
-                <element signature="e#3450#4198#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/alibaba.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="181">
-              <caret line="64" column="29" selection-start-line="64" selection-start-column="10" selection-end-line="64" selection-end-column="29" />
-              <folding>
-                <element signature="e#24#37#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -49,8 +31,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="452" column="78" selection-start-line="452" selection-start-column="78" selection-end-line="452" selection-end-column="78" />
+            <state relative-caret-position="336">
+              <caret line="502" column="89" lean-forward="true" selection-start-line="502" selection-start-column="89" selection-end-line="502" selection-end-column="89" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -90,6 +72,12 @@
       <find>ma-ref-price</find>
       <find>col-xs-12 nopadding search-results</find>
       <find>fin</find>
+      <find>text-capi</find>
+      <find>col-xs-12 xs-padd-lr-5</find>
+      <find>mar-top-10</find>
+      <find>pull-left</find>
+      <find>pull-left&quot;</find>
+      <find>underline-none</find>
     </findStrings>
     <replaceStrings>
       <replace>#self.collection_go4w_data</replace>
@@ -222,8 +210,8 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32937366" />
-      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32937366" />
-      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49945354" weight="0.32937366" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50054646" side_tool="true" weight="0.32937366" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32937366" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -310,28 +298,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/go4w.py</url>
-          <line>151</line>
-          <option name="timeStamp" value="147" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/go4w.py</url>
-          <line>159</line>
-          <option name="timeStamp" value="148" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/go4w.py</url>
-          <line>253</line>
-          <option name="timeStamp" value="149" />
+          <line>228</line>
+          <option name="timeStamp" value="158" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="soup.select(&quot;ul.pagination&quot;)[0].contents" language="Python" />
-        <watch expression="lastPagelist[len(lastPagelist) - 2].find('a')['href'].strip()" language="Python" />
-        <watch expression="soup.find_all('div', class_ =&quot;col-xs-12 nopadding search-results&quot;)" language="Python" />
-        <watch expression="searchResultSet.find('h2',class_=&quot;entity-row-title h2-item-title&quot;).find('span').text.strip()" language="Python" />
-        <watch expression="soup.find('ul', class_ =&quot;pagination&quot;).find_all('li')" language="Python" />
+        <watch expression="searchResultSet.find('div', class_=&quot;col-xs-12 xs-padd-lr-5&quot;)" language="Python" />
+        <watch expression="searchResultSet.find('div', class_=&quot;col-xs-12 xs-padd-lr-5&quot;).find('div')" language="Python" />
+        <watch expression="str(searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find('a').text.strip()).replace('Buyer Of', '')" language="Python" />
+        <watch expression="clean_text_(str(searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find('a').text.strip()).replace('Buyer Of', ''))" language="Python" />
+        <watch expression="str(searchResultSet)" language="Python" />
       </configuration>
     </watches-manager>
   </component>
@@ -350,47 +328,52 @@
     </expressions>
     <expressions id="watch">
       <expression>
-        <expression-string>soup.find('ul', class_ =&quot;pagination&quot;).find_all('li')</expression-string>
+        <expression-string>str(searchResultSet)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find('ul', class_ =&quot;pagination&quot;).find('li')</expression-string>
+        <expression-string>text.replace('\n' , 'taha')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find('ul', class_ =&quot;pagination&quot;)</expression-string>
+        <expression-string>text.replace('\\n' , 'taha')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find('ul', class_ =&quot;pagination&quot;).findall('li')</expression-string>
+        <expression-string>clean_text_(str(searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find('a').text.strip()).replace('Buyer Of', ''))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find_all('ul', class_ =&quot;pagination&quot;)</expression-string>
+        <expression-string>str(searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find('a').text.strip()).replace('Buyer Of', '')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>searchResultSet.find('h2',class_=&quot;entity-row-title h2-item-title&quot;).find('span').text.strip()</expression-string>
+        <expression-string>searchResultSet.find('div', class_=&quot;mar-top-10&quot;).find('a').text.strip()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>searchResultSet.find('h2',class_=&quot;entity-row-title h2-item-title&quot;).find('span').text</expression-string>
+        <expression-string>searchResultSet.find('div', class_=&quot;col-xs-12 xs-padd-lr-5&quot;).find('div')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>searchResultSet.find('h2',class_=&quot;entity-row-title h2-item-title&quot;).find('span')</expression-string>
+        <expression-string>searchResultSet.find('div', class_=&quot;col-xs-12 xs-padd-lr-5&quot;)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>searchResultSet.find('h2',class_=&quot;entity-row-title h2-item-title&quot;)</expression-string>
+        <expression-string>len(searchResultSet.find_all('span',class_=&quot;pull-left&quot;))</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>searchResultSet.find('div', class_=&quot;col-xs-12 xs-padd-lr-5&quot;).find('div').find('a').text</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -515,20 +498,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/lib/python3/dist-packages/requests/adapters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="507" selection-start-line="507" selection-end-line="507" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="17" selection-start-line="17" selection-end-line="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4440">
@@ -563,10 +532,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3/dist-packages/requests/adapters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="507" column="53" lean-forward="true" selection-start-line="507" selection-start-column="53" selection-end-line="507" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="452" column="78" selection-start-line="452" selection-start-column="78" selection-end-line="452" selection-end-column="78" />
+        <state relative-caret-position="336">
+          <caret line="502" column="89" lean-forward="true" selection-start-line="502" selection-start-column="89" selection-end-line="502" selection-end-column="89" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
@@ -575,18 +558,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/go4w.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="249">
-          <caret line="161" column="38" lean-forward="true" selection-start-line="161" selection-start-column="38" selection-end-line="161" selection-end-column="38" />
+        <state relative-caret-position="263">
+          <caret line="282" column="13" lean-forward="true" selection-start-line="282" selection-start-column="13" selection-end-line="282" selection-end-column="13" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
             <element signature="e#747#1000#0" />
             <element signature="e#1077#1643#0" />
-            <element signature="e#1728#1962#0" />
-            <element signature="e#2048#2793#0" />
-            <element signature="e#2880#3572#0" />
             <element signature="e#3676#3975#0" />
             <element signature="e#1736#2385#0" />
-            <element signature="e#3450#4198#0" />
           </folding>
         </state>
       </provider>

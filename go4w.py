@@ -93,7 +93,7 @@ def clean_text_(text):
     output: text
     description: Clean Text from non valid characters for add to database
     '''
-    text_1 = clean_html(str(text)[2:-2])  # remove html tags from text
+    text_1 = clean_html(str(text.replace('\n', '')))  # remove html tags from text
     text_2 = text_1.lstrip().rstrip()  # remove whitespaces from begin and end of string
     text_3 = text_2.replace('\\n', '').strip()  # remove new line chracters from string
     text_4 = re.sub(' +', ' ', text_3)
@@ -156,21 +156,42 @@ def buyerCrawler(url, s):
             buyerList = soup.find_all('div', class_ ="col-xs-12 nopadding search-results")
 
             for searchResultSet in buyerList:
+
+                buyerCompanyName = None
+                if (searchResultSet.find('h2',class_="entity-row-title h2-item-title") != None):
+                    buyerCompanyName = searchResultSet.find('h2',class_="entity-row-title h2-item-title").find('span').text.strip()
+                date =  searchResultSet.find('div',class_="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding").find('small').text.strip()
+                buyerProductName = None
+
+                if (searchResultSet.find('h2',class_="text-capitalize entity-row-title h2-item-title") != None):
+                    buyerProductName = clean_text_(str(searchResultSet.find('h2',class_="text-capitalize entity-row-title h2-item-title").find('span').text.strip()))
+
+                buyerCountry = clean_text_(str(searchResultSet.find('span',class_="pull-left subtitle text-capitalize").text.strip().replace('Buyer From', '')))
+                buyerText = None
+                if (searchResultSet.find('div',class_="col-xs-12 entity-row-description-search xs-padd-lr-5") != None):
+                    buyerText = searchResultSet.find('div',class_="col-xs-12 entity-row-description-search xs-padd-lr-5").find('p').text.strip()
+                buyerBuyerOF = clean_text_(str(searchResultSet.find('div', class_="mar-top-10").find('a').text.strip()).replace('Buyer Of', ''))
+                buyerCompanyLink = None
+                if (len(searchResultSet.find_all('span',class_="pull-left")) >= 2 ):
+                    buyerCompanyLink = searchResultSet.find_all('span',class_="pull-left")[1].find('a')['href']
+                isSupplier = False
+                isBuyer = True
+                Key = str(clean_text_(date) + ' , ' + clean_text_(buyerCompanyLink).replace(' ', ''))
+                searchCategory = url
+
                 result = {
-                    'buyerCompanyName': searchResultSet.find('h2',class_="entity-row-title h2-item-title").find('span').text.strip(),
-                    'date': searchResultSet.find('div',class_="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding").find('small').text.strip(),
-                    'buyerProductName': clean_text_(str(searchResultSet.find('h2',class_="text-capitalize entity-row-title h2-item-title").find('span').text.strip())),
-                    'buyerCountry': clean_text_(str(searchResultSet.find('span',class_="pull-left subtitle text-capitalize").text.strip().replace('Buyer From', ''))),
-                    'buyerText': searchResultSet.find('div',class_="col-xs-12 entity-row-description-search xs-padd-lr-5").find('p').text.strip(),
-                    'buyerBuyerOF': clean_text_(str(searchResultSet.find('div', class_="col-xs-12 xs-padd-lr-5").find('div').find('a').text.strip()).replace('Buyer Of', '')),
-                    'buyerCompanyLink': searchResultSet.find('span',class_="pull-left").find('a')['href'],
-                    'isSupplier': False,
-                    'isBuyer': True,
-                    'Key': str(clean_text_(searchResultSet.find('div',class_="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding").find('small').text.strip()) + ' , ' + clean_text_(str(searchResultSet.find('span',class_="pull-left").find('a')['href']))).replace(' ', ''),
-                    'searchCategory': url.replace('https://www.go4worldbusiness.com/find?searchText=', '').replace('&FindBuyers', '')
-
+                    'buyerCompanyName' : buyerCompanyName,
+                    'date' : date,
+                    'buyerProductName' : buyerProductName,
+                    'buyerCountry' : buyerCountry,
+                    'buyerText' : buyerText,
+                    'buyerBuyerOF' : buyerBuyerOF,
+                    'buyerCompanyLink' : buyerCompanyLink,
+                    'isSupplier' : isSupplier,
+                    'isBuyer' : isBuyer,
+                    'Key' : Key,
+                    'searchCategory' : searchCategory
                 }
-
 
 
         except urllib.error.HTTPError as e:
@@ -201,7 +222,52 @@ def supplierCrawler(url, s):
     ########################################################
     while True:
         try:
-            a=3
+            html = s.get(str(url), proxies={'http': proxy}).content
+            soup = BeautifulSoup(html, 'html.parser')
+            supplierList = soup.find_all('div', class_="col-xs-12 nopadding search-results")
+
+            for searchResultSet in supplierList:
+
+                supplierCompanyName = None
+                if (searchResultSet.find('h2', class_="entity-row-title h2-item-title") != None):
+                    supplierCompanyName = searchResultSet.find('h2', class_="entity-row-title h2-item-title").find(
+                        'span').text.strip()
+                date = searchResultSet.find('div', class_="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding").find(
+                    'small').text.strip()
+
+                supplierCountry = clean_text_(str(
+                    searchResultSet.find('span', class_="pull-left subtitle text-capitalize").text.strip().replace(
+                        'Supplier From', '')))
+                supplierText = None
+                if (searchResultSet.find('div', class_="col-xs-12 entity-row-description-search xs-padd-lr-5") != None):
+                    supplierText = searchResultSet.find('div',
+                                                     class_="col-xs-12 entity-row-description-search xs-padd-lr-5").find(
+                        'p').text.strip()
+
+                supplierSupplierOF = clean_text_(
+                    str(searchResultSet.find('div', class_="mar-top-10").find('a').text.strip()).replace('Buyer Of',
+                                                                                                         ''))
+                supplierCompanyLink = None
+                if (len(searchResultSet.find_all('span', class_="pull-left")) >= 2):
+                    supplierCompanyLink = searchResultSet.find_all('span', class_="pull-left")[1].find('a')['href']
+                isSupplier = True
+                isBuyer = False
+                Key = str(clean_text_(date) + ' , ' + clean_text_(supplierCompanyLink).replace(' ', ''))
+                searchCategory = url
+
+                result = {
+                    'supplierCompanyName': supplierCompanyName,
+                    'date': date,
+                    'supplierCountry': supplierCountry,
+                    'supplierText': supplierText,
+                    'supplierSupplierOF': supplierSupplierOF,
+                    'supplierCompanyLink': supplierCompanyLink,
+                    'isSupplier': isSupplier,
+                    'isBuyer': isBuyer,
+                    'Key': Key,
+                    'searchCategory': searchCategory
+                }
+
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
