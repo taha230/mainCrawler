@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d1c021a-64bc-4c71-a687-9616be807a70" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go4w.py" beforeDir="false" afterPath="$PROJECT_DIR$/go4w.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,30 +16,30 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/go4w.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="163">
-              <caret line="450" column="33" selection-start-line="450" selection-start-column="33" selection-end-line="450" selection-end-column="33" />
+            <state relative-caret-position="415">
+              <caret line="34" column="30" lean-forward="true" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="30" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
-                <element signature="e#747#1000#0" />
-                <element signature="e#1077#1643#0" />
-                <element signature="e#7478#9634#0" />
-                <element signature="e#8433#9220#0" />
-                <element signature="e#9376#10163#0" />
-                <element signature="e#10307#11094#0" />
-                <element signature="e#11238#12025#0" />
+                <element signature="e#775#1028#0" />
+                <element signature="e#1105#1671#0" />
+                <element signature="e#1750#1984#0" />
+                <element signature="e#2064#2812#0" />
+                <element signature="e#2893#3598#0" />
+                <element signature="e#3696#3997#0" />
+                <element signature="e#4831#5405#0" />
+                <element signature="e#5517#7336#0" />
+                <element signature="e#7478#9537#0" />
+                <element signature="e#13461#18121#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py">
+        <entry file="file://$PROJECT_DIR$/go4w_result.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="311">
-              <caret line="226" column="96" selection-start-line="226" selection-start-column="13" selection-end-line="226" selection-end-column="96" />
-              <folding>
-                <element signature="e#24#37#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="144">
+              <caret line="6" column="49" lean-forward="true" selection-start-line="6" selection-start-column="49" selection-end-line="6" selection-end-column="49" />
             </state>
           </provider>
         </entry>
@@ -54,7 +55,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>may</find>
       <find>change_proxy</find>
       <find>Go4WSpiderMiddleware</find>
       <find>appendlist</find>
@@ -82,8 +82,9 @@
       <find>pull-left&quot;</find>
       <find>underline-none</find>
       <find>nav-pills center-pills</find>
-      <find>nestedURLGeneralCompanyCrawler</find>
       <find>padd-lr-10 mar-top-10 &quot;</find>
+      <find>nestedURLGeneralCompanyCrawler</find>
+      <find>buyerCrawler</find>
     </findStrings>
     <replaceStrings>
       <replace>#self.collection_go4w_data</replace>
@@ -102,9 +103,9 @@
         <option value="$PROJECT_DIR$/eworldtrade/eworldtrade/spiders/eworldtradespider.py" />
         <option value="$PROJECT_DIR$/alibaba/alibaba/spiders/alibaba.py" />
         <option value="$PROJECT_DIR$/get_size.py" />
-        <option value="$PROJECT_DIR$/alibaba.py" />
         <option value="$PROJECT_DIR$/tabletojson.py" />
         <option value="$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py" />
+        <option value="$PROJECT_DIR$/alibaba.py" />
         <option value="$PROJECT_DIR$/go4w.py" />
       </list>
     </option>
@@ -119,11 +120,39 @@
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="Scope" currentSubView="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope" proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
+      <pane id="Scope">
+        <subPane subId="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope">
+          <expand>
+            <path>
+              <item name="mainCrawler" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="~/Documents/mainCrawler" type="442cc68d:ScopeViewTreeModel$RootNode" />
+            </path>
+            <path>
+              <item name="mainCrawler" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="~/Documents/mainCrawler" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="go4w" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="mainCrawler" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="~/Documents/mainCrawler" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="go4w" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="go4w" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="mainCrawler" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="~/Documents/mainCrawler" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="go4w" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="go4w" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="spiders" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
       <pane id="ProjectPane" />
     </panes>
   </component>
@@ -200,8 +229,8 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32937366" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.32289416" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.34341252" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.21274298" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -292,12 +321,26 @@
           <line>9</line>
           <option name="timeStamp" value="141" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/go4w.py</url>
+          <line>356</line>
+          <option name="timeStamp" value="185" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/go4w.py</url>
+          <line>704</line>
+          <option name="timeStamp" value="188" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/go4w.py</url>
+          <line>695</line>
+          <option name="timeStamp" value="190" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="tokenize_text(txt)" language="Python" />
-        <watch expression="newResult.items()" language="Python" />
+        <watch expression="managementTextDiv.find('p').text" language="Python" />
       </configuration>
     </watches-manager>
   </component>
@@ -316,52 +359,52 @@
     </expressions>
     <expressions id="watch">
       <expression>
-        <expression-string>newResult.items()</expression-string>
+        <expression-string>managementTextDiv.find('p').text</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>newResult.items() + result.items() + tokenizedResult.items()</expression-string>
+        <expression-string>managementTextDiv.find('p')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>{key: value for (key, value) in (newResult.items() + result.items() + tokenizedResult.items())}</expression-string>
+        <expression-string>json.dumps(result)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>tokenize_text(txt)</expression-string>
+        <expression-string>nestedURLNewsRoomCompany</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find_all('div', class_=&quot;padd-lr-10 mar-top-10&quot;)[0].text</expression-string>
+        <expression-string>facilitiesTextDiv</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>div.text()</expression-string>
+        <expression-string>url</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>div</expression-string>
+        <expression-string>nestedURLFaculitiesCompany</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find_all('div', class_=&quot;padd-lr-10 mar-top-10&quot;)</expression-string>
+        <expression-string>nestedURLManagementCompany</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find('div', class_=&quot;padd-lr-10 mar-top-10&quot;)</expression-string>
+        <expression-string>soup.find('div', class_=&quot;xs-padd-lr-5&quot;)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>soup.find('div', class_=&quot;padd-lr-10 mar-top-10 &quot;)</expression-string>
+        <expression-string>soup.find('div', class_=&quot;xs-padd-lr-5&quot;).find_all('li')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -526,8 +569,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/alibaba.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1776">
-          <caret line="64" column="29" selection-start-line="64" selection-start-column="10" selection-end-line="64" selection-end-column="29" />
+        <state relative-caret-position="671">
+          <caret line="253" column="60" lean-forward="true" selection-start-line="253" selection-start-column="60" selection-end-line="253" selection-end-column="60" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
@@ -536,27 +579,37 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/go4w/go4w/spiders/go4wSpider.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="311">
-          <caret line="226" column="96" selection-start-line="226" selection-start-column="13" selection-end-line="226" selection-end-column="96" />
+        <state relative-caret-position="480">
+          <caret line="466" column="28" selection-start-line="466" selection-end-line="467" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/go4w_result.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="6" column="49" lean-forward="true" selection-start-line="6" selection-start-column="49" selection-end-line="6" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/go4w.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="163">
-          <caret line="450" column="33" selection-start-line="450" selection-start-column="33" selection-end-line="450" selection-end-column="33" />
+        <state relative-caret-position="415">
+          <caret line="34" column="30" lean-forward="true" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="30" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
-            <element signature="e#747#1000#0" />
-            <element signature="e#1077#1643#0" />
-            <element signature="e#7478#9634#0" />
-            <element signature="e#8433#9220#0" />
-            <element signature="e#9376#10163#0" />
-            <element signature="e#10307#11094#0" />
-            <element signature="e#11238#12025#0" />
+            <element signature="e#775#1028#0" />
+            <element signature="e#1105#1671#0" />
+            <element signature="e#1750#1984#0" />
+            <element signature="e#2064#2812#0" />
+            <element signature="e#2893#3598#0" />
+            <element signature="e#3696#3997#0" />
+            <element signature="e#4831#5405#0" />
+            <element signature="e#5517#7336#0" />
+            <element signature="e#7478#9537#0" />
+            <element signature="e#13461#18121#0" />
           </folding>
         </state>
       </provider>
