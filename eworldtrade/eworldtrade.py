@@ -80,21 +80,18 @@ def create_category_url():
     proxy, useragent = change_proxy()
     s = IncapSession()
     s.headers['User-Agent'] = useragent
-    s.headers['Referer'] = 'https://www.hardwareshow-china.com/'
+    #s.headers['Referer'] = useragent
     s.headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3'
     s.headers['Upgrade-Insecure-Requests'] = '0'
 
     while True:
-        try:
-            html = s.get("https://www.eworldtrade.com/products/", proxies={'http': proxy}).content
-            soup = BeautifulSoup(html, 'html.parser')
-            h5s = soup.find_all('h5')
-            if(len(h5s)>0):
-                break
-            proxy, useragent = change_proxy()
-            s.headers['User-Agent'] = useragent
-        except:
-            continue
+        html = s.get("https://www.eworldtrade.com/products/", proxies={'http': proxy}).content
+        soup = BeautifulSoup(html, 'html.parser')
+        h5s = soup.find_all('h5')
+        if(len(h5s)>0):
+            break
+        proxy, useragent = change_proxy()
+        s.headers['User-Agent'] = useragent
 
     urls = [h5.find('a').attrs['href'] for h5 in h5s if h5.find('a')]
 
@@ -110,26 +107,17 @@ def get_links_of_categories(s, proxy, urls):
     total_urls = []
     change_proxy_counter = 0
     for url in urls:
-        try:
-            while True:
-                html = s.get(url, proxies={'http': proxy}).content
-                soup = BeautifulSoup(html, 'html.parser')
-                atags = soup.select('a.text-muted')
-                if (len(atags) > 0 and change_proxy_counter<=5):
-                    change_proxy_counter = change_proxy_counter + 1
-                    print(f'{url} has been done.')
-                    break
+        while True:
+            html = s.get(url, proxies={'http': proxy}).content
+            soup = BeautifulSoup(html, 'html.parser')
+            atags = soup.select('a.text-muted')
+            if (len(atags) > 0):
+                change_proxy_counter = change_proxy_counter + 1
+                print(f'{url} has been done.')
+                break
 
-                proxy, useragent = change_proxy()
-                s.headers['User-Agent'] = useragent
-                s.headers['Upgrade-Insecure-Requests'] = '0'
-                change_proxy_counter = 0
-        except:
             proxy, useragent = change_proxy()
             s.headers['User-Agent'] = useragent
-            s.headers['Upgrade-Insecure-Requests'] = '0'
-            change_proxy_counter = 0
-            continue
         for a in atags:
             total_urls.append(a.attrs['href'])
     return total_urls
