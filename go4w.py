@@ -34,7 +34,7 @@ def create_category_url():
     urls = []
     #products = products[0:10]
     for p in list(products):
-        #urls.append("https://www.go4worldbusiness.com/suppliers/" + str(p['name']).replace(',','').replace(' & ',' ').replace(' ',"-"))
+        urls.append("https://www.go4worldbusiness.com/suppliers/" + str(p['name']).replace(',','').replace(' & ',' ').replace(' ',"-"))
         urls.append("https://www.go4worldbusiness.com/buyers/" + str(p['name']).replace(',','').replace(' & ',' ').replace(' ',"-"))
         #return urls
 
@@ -229,30 +229,30 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
         try:
             html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
+            newResult = {}
 
             companyLogo = ""
-            if (soup.find('div', class_="mar-top-10 col-xs-offset-0 col-xs-11 gold-menu text-center")):
-                companyLogo = \
-                soup.find('div', class_="mar-top-10 col-xs-offset-0 col-xs-11 gold-menu text-center").find('img')['src']
+            if (soup.find('div', class_="gold-menu")):
+                companyLogo = soup.find('div', class_="gold-menu").find('img')['src']
 
-            tokenizedResult = {}
+            if (soup.find('div', class_="row")):
+                for d in soup.find_all('div', class_="row"):
+                    if d.find('address'):
+                        #splitList = (' Our Company', 'Quality Assurance', 'Why Us', 'Annual Sales And  Certifications', 'Approximate Annual Sales:', 'Certifications And Standards:', 'Dealing In Products And Services', 'Our Primary Business:', 'Supplier', 'Services', 'Contact Details', 'Contact Person: ') # tuple(re.findall("<(?:b|h3|h2)>(.*?)</(?:b|h3|h2)>", str(d)))
+                        splitList = tuple(re.findall("<(?:b|h3|h2)>(.*?)</(?:b|h3|h2)>", str(d)))
+                        regex = r"(?:{})".format("|".join(splitList))
+                        splitResult = re.split(regex, " " + d.text.strip())
 
-            if (soup.find('div', class_="padd-lr-10 mar-top-10")):
-                txt = soup.find_all('div', class_="padd-lr-10 mar-top-10")[0].text
-                tokenizedResult = tokenize_text(txt)
+                        # add splited list to output json
+                        if (len(splitResult) == len(splitList) + 1): # one " " added to split first split word
+                            for i in range (len(splitList)):
+                                newResult[splitList[i]] = clean_text_(splitResult[i+1].replace('Rate This Member','').replace('File a complaint', ''))
+                        break
 
-            contactDetailText = ""
-            if (soup.find('div', class_="padd-lr-10 mar-top-10")):
-                for div in soup.find_all('div', class_="padd-lr-10 mar-top-10"):
-                    if (div.find('address')):
-                        contactDetailText += div.find('address').text.replace('<address>', '').replace(
-                            '</address>', '').replace('<br>', ',').replace('<b>', ',').replace('</b>', ',')
-
-            newResult = {}
             newResult['logoSrc'] = clean_text_(str(companyLogo))
-            newResult['contactDetail'] = clean_text_(contactDetailText)
-            nestedResultOurCompany = merge(newResult, tokenizedResult)
 
+            nestedResultOurCompany = newResult
+            return nestedResultOurCompany
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -262,14 +262,11 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
         except:
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in buyerCrawler function and try again')
+            print('Error Occurred in OurcompanyCrawler function and try again')
             continue
 
         else:
             break
-
-
-    return nestedResultOurCompany
 
 
 ########################################################################################
@@ -286,24 +283,20 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
         try:
             html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
-            productList = soup.find_all('div', class_="xs-padd-lr-5")
 
-            productTextList =[]
-            productNameList =[]
-            ProductImageSrcList =[]
+            productTextList = []
+            productNameList = []
+            ProductImageSrcList = []
 
-            for product in productList:
-                if (product.find('p')):
-                    productTextList.append(product.find('p').text)
-                if (product.find('img')):
-                    ProductImageSrcList.append(product.find('img')['src'])
+            h5List = soup.find_all('h5', class_= "entity-row-title")
 
-            productNameListSoup = soup.find_all('div' , class_= "mar-top-5")
-
-            for productName in productNameListSoup:
-                if (productName.find('h5', class_= "entity-row-title")):
-                    if (productName.find('h5', class_= "entity-row-title").find('span')):
-                        productNameList.append(productName.find('h5', class_= "entity-row-title").find('span').text)
+            for h5Section in h5List:
+                divParent = h5Section.parent.parent.parent
+                productTextList.append(clean_text_(divParent.findNext('p').text))
+                if ('.jpg' in divParent.findNext('img')['src']) :
+                    ProductImageSrcList.append(divParent.findNext('img')['src'])
+                if (h5Section.find('span')):
+                    productNameList.append(clean_text_(h5Section.find('span').text))
 
             productList = []
 
@@ -335,7 +328,7 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
         except:
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in buyerCrawler function and try again')
+            print('Error Occurred in nestedURLProductsCompanyCrawler function and try again')
             continue
 
         else:
@@ -357,13 +350,14 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
             html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
 
-            managementTextDiv = str(soup.find('div',class_="col-xs-12"))
-            managementText =""
-
-            if (managementTextDiv.find('p').text):
-                managementText = managementTextDiv.find('p').text
-
+            managementText = ""
             newResult = {}
+
+            for p in soup.find_all('p'):
+                if (p.text):
+                    managementText += p.text
+
+
             newResult['managementText'] = clean_text_(managementText)
 
             return newResult
@@ -376,7 +370,7 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
         except:
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in buyerCrawler function and try again')
+            print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
             continue
 
         else:
@@ -398,18 +392,29 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
             html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
 
-            facilitiesTextDiv = soup.find_all('div', class_="padd-lr-10 mar-top-10")
-            facilitiesText = ""
-
-            for div in facilitiesTextDiv:
-                for divrow in div.find_all('div' , class_="row"):
-                    if (divrow.find('div', class_="col-xs-12").text):
-                        facilitiesText = divrow.find('div', class_="col-xs-12").text
-
             newResult = {}
-            newResult['facilitiesText'] = clean_text_(facilitiesText)
 
-            return newResult
+            if (soup.find('div', class_="row")):
+                for d in soup.find_all('div', class_="row"):
+                    if d.find('address'):
+                        # splitList = (' Our Company', 'Quality Assurance', 'Why Us', 'Annual Sales And  Certifications', 'Approximate Annual Sales:', 'Certifications And Standards:', 'Dealing In Products And Services', 'Our Primary Business:', 'Supplier', 'Services', 'Contact Details', 'Contact Person: ') # tuple(re.findall("<(?:b|h3|h2)>(.*?)</(?:b|h3|h2)>", str(d)))
+                        splitList = tuple(re.findall("<(?:b|h3|h2)>(.*?)</(?:b|h3|h2)>", str(d).replace('&amp;', '&'))) # replace & to ignore change in str(d)
+                        regex = r"(?:{})".format("|".join(splitList))
+                        splitResult = re.split(regex, " " + d.text.strip().replace('\n', ' '))
+
+                        # add splited list to output json
+                        if (len(splitResult) == len(splitList) + 1):  # one " " added to split first split word
+                            for i in range(len(splitList)):
+                                if ('Contact Details' in splitList[i] or 'Contact Person' in splitList[i]): # ignore contact details and contact person to add (these adde in ourcompany section)
+                                    continue
+                                else:
+                                    newResult[splitList[i]] = clean_text_(
+                                    splitResult[i + 1].replace('Rate This Member', '').replace('File a complaint', ''))
+                        break
+
+
+            nestedResultFacilities = newResult
+            return nestedResultFacilities
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -419,7 +424,7 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
         except:
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in buyerCrawler function and try again')
+            print('Error Occurred in nestedURLFacilitiesCompanyCrawler function and try again')
             continue
 
         else:
@@ -441,13 +446,11 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
             html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
 
-            newsRoomTextDiv = soup.find_all('div', class_="padd-lr-10 mar-top-10")
             newsRoomText = ""
 
-            for div in newsRoomTextDiv:
-                for divrow in div.find_all('div', class_="row"):
-                    if (divrow.find('div', class_="col-xs-12").text):
-                        newsRoomText = divrow.find('div', class_="col-xs-12").text
+            for p in soup.find_all('p'):
+                if (p.text):
+                    newsRoomText += p.text
 
             newResult = {}
             newResult['newsRoomText'] = clean_text_(newsRoomText)
@@ -462,7 +465,7 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
         except:
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in buyerCrawler function and try again')
+            print('Error Occurred in nestedURLNewsRoomCompanyCrawler function and try again')
             continue
 
         else:
@@ -472,20 +475,22 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
 ###########################################################
 def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
     '''
-    function_name: nestedURLBuyerCompanyCrawler
+    function_name: nestedURLGeneralCompanyCrawler
     input: response
     output: json
     description: crawl all inforamtion from company nested url
     '''
 
+    url = "https://www.go4worldbusiness.com/pref_product/view/959532/iron-ore.html"
+
     while True:
         try:
             html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
-            mainTabList = soup.find('ul', class_="center-pills").find_all('li')
+            mainTabList = soup.find('ul', class_="nav-pills").find_all('li')
 
             isOurCompanySelected, isProductsSelected, isManagementSelected, isFacilitiesSelector, isNewsRoomSelector = None, None, None, None, None
-            nestedResult = {}
+            nestedResult ={}
 
             for  i in range(len(mainTabList)):
                 if ('Company' in mainTabList[i].find('a').text):
@@ -502,27 +507,29 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
             if ("html" in str(isOurCompanySelected) and (str(isOurCompanySelected) in url)):  # the second condition for nested page in company page
 
                 companyLogo = ""
-                if (soup.find('div', class_= "mar-top-10 col-xs-offset-0 col-xs-11 gold-menu text-center")):
-                    companyLogo = soup.find('div', class_= "mar-top-10 col-xs-offset-0 col-xs-11 gold-menu text-center").find('img')['src']
-
-                tokenizedResult = {}
-
-                if (soup.find('div', class_="padd-lr-10 mar-top-10")):
-                    txt = soup.find_all('div', class_="padd-lr-10 mar-top-10")[0].text
-                    tokenizedResult = tokenize_text(txt)
-
-
-                contactDetailText = ""
-                if (soup.find('div', class_="padd-lr-10 mar-top-10")):
-                    for div in soup.find_all('div', class_="padd-lr-10 mar-top-10"):
-                        if (div.find('address')):
-                            contactDetailText += div.find('address').text.replace('<address>','').replace(
-                        '</address>', '').replace('<br>', ',').replace('<b>', ',').replace('</b>', ',')
-
                 newResult = {}
+                if (soup.find('div', class_="gold-menu")):
+                    companyLogo = soup.find('div', class_="gold-menu").find('img')['src']
+
+                if (soup.find('div', class_="row")):
+                    for d in soup.find_all('div', class_="row"):
+                        if d.find('address'):
+                            # splitList = (' Our Company', 'Quality Assurance', 'Why Us', 'Annual Sales And  Certifications', 'Approximate Annual Sales:', 'Certifications And Standards:', 'Dealing In Products And Services', 'Our Primary Business:', 'Supplier', 'Services', 'Contact Details', 'Contact Person: ') # tuple(re.findall("<(?:b|h3|h2)>(.*?)</(?:b|h3|h2)>", str(d)))
+                            splitList = tuple(re.findall("<(?:b|h3|h2)>(.*?)</(?:b|h3|h2)>", str(d)))
+                            regex = r"(?:{})".format("|".join(splitList))
+                            splitResult = re.split(regex, " " + d.text.strip())
+
+                            # add splited list to output json
+                            if (len(splitResult) == len(splitList) + 1):  # one " " added to split first split word
+                                for i in range(len(splitList)):
+                                    newResult[splitList[i]] = clean_text_(splitResult[i + 1].replace('Rate This Member',
+                                                                                         '').replace('File a complaint',
+                                                                                                     ''))
+
                 newResult['logoSrc'] = clean_text_(str(companyLogo))
-                newResult['contactDetail'] = clean_text_(contactDetailText)
-                nestedResultOurCompany = merge(newResult, tokenizedResult)
+
+                nestedResultOurCompany = newResult
+
                 nestedResult = merge (nestedResult , nestedResultOurCompany)
 
             #############################################################################################################
@@ -561,14 +568,11 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
         except:
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in supplierCrawler function and try again')
+            print('Error Occurred in nestedURLGeneralCompanyCrawler function and try again')
             continue
 
         else:
             break
-
-
-
 
 
 ########################################################################
@@ -591,22 +595,34 @@ def buyerCrawler(url, s, proxy):
 
                 buyerCompanyName, buyerProductName, date, buyerCountry, buyerText, buyerBuyerOF, buyerCompanyLink= "","","","","","",""
 
-                if (searchResultSet.find('h2',class_="entity-row-title") != None):
-                    buyerCompanyName = searchResultSet.find('h2',class_="entity-row-title").find('span').text.strip()
+                if (searchResultSet.find('button', class_="site-btn")): continue; # ignore contact div to parse
 
-                date =  searchResultSet.find('div',class_="col-xs-3 col-sm-2 xs-padd-lr-2 nopadding").find('small').text.strip()
+                if (searchResultSet.find('h2',class_="entity-row-title") and searchResultSet.find('h2', class_="entity-row-title").find(
+                        'span')):
+                    if ('Wanted :' not in searchResultSet.find('h2',class_="entity-row-title").find('span').text.strip()):
+                        buyerCompanyName = searchResultSet.find('h2',class_="entity-row-title").find('span').text.strip()
+                    else:
+                        buyerProductName = searchResultSet.find('h2',class_="entity-row-title").find('span').text.replace('Wanted :','').strip()
 
-                if (searchResultSet.find('h2',class_="text-capitalize entity-row-title h2-item-title") != None):
-                    buyerProductName = clean_text_(str(searchResultSet.find('h2',class_="text-capitalize entity-row-title h2-item-title").find('span').text.strip()))
+                if (searchResultSet.find('div', class_="borderJUNIOR") and searchResultSet.find('div', class_="borderJUNIOR" ).find_all('small')):
+                    for small in searchResultSet.find('div', class_="borderJUNIOR" ).find_all('small'):
+                        if 'VERIFIED' not in small.text.strip():
+                            date = small.text.strip()
 
-                buyerCountry = clean_text_(str(searchResultSet.find('span',class_="pull-left subtitle text-capitalize").text.strip().replace('Buyer From', '')))
+                if (searchResultSet.find('span', class_="text-capitalize")):
+                    buyerCountry = clean_text_(str(searchResultSet.find('span',class_="text-capitalize").text.strip().replace('Buyer From', '')))
 
-                if (searchResultSet.find('div',class_="col-xs-12 entity-row-description-search xs-padd-lr-5") != None):
-                    buyerText = searchResultSet.find('div',class_="col-xs-12 entity-row-description-search xs-padd-lr-5").find('p').text.strip()
-                buyerBuyerOF = clean_text_(str(searchResultSet.find('div', class_="mar-top-10").find('a').text.strip()).replace('Buyer Of', ''))
-                buyerCompanyLink = None
-                if (len(searchResultSet.find_all('span',class_="pull-left")) >= 2 ):
-                    buyerCompanyLink = searchResultSet.find_all('span',class_="pull-left")[1].find('a')['href']
+                if (searchResultSet.find('div',class_="entity-row-description-search") and searchResultSet.find('div',class_="entity-row-description-search").find('p')):
+                    buyerText = searchResultSet.find('div',class_="entity-row-description-search").find('p').text.strip()
+
+                if (searchResultSet.find('div') and searchResultSet.find('div').find('a')):
+                    aList = searchResultSet.find('div', class_="mar-top-10").find_all('a')
+                    for a in aList:
+                        buyerBuyerOF += clean_text_(a.text.strip()).replace('Buyer Of', '')
+
+                if (searchResultSet.find('a')['href']):
+                    buyerCompanyLink = searchResultSet.find('a')['href']
+
                 isSupplier = False
                 isBuyer = True
                 Key = str(clean_text_(date) + ' , ' + clean_text_(buyerCompanyLink).replace(' ', ''))
@@ -626,15 +642,19 @@ def buyerCrawler(url, s, proxy):
                     'searchCategory' : searchCategory
                 }
 
-                if (result['buyerCompanyName'] != []):  # crawl nested company link for cases have type buyerCompanyName (not person link and with star in front)
+                tokenizeResult = tokenize_buyer_or_supplier_text(result)
+                result = merge(result, tokenizeResult)
+
+                if (result['buyerCompanyName'] != ""):  # crawl nested company link for cases have type buyerCompanyName (not person link and with star in front)
                     nestedURLCompany = "https://www.go4worldbusiness.com" + str(result['buyerCompanyLink'])
                     nestedResult = nestedURLGeneralCompanyCrawler(nestedURLCompany, result, s, proxy)
-                else:
-                    tokenizeResutl = tokenize_buyer_or_supplier_text(result)
-                    result = merge(result, tokenizeResutl)
+
 
                 result = merge(result, nestedResult)
-                return result
+
+                f.write(json.dumps(result))
+                f.write('\n')
+                print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -671,13 +691,17 @@ def supplierCrawler(url, s, proxy):
 
                 supplierCompanyName, date, supplierCountry, supplierText, supplierSupplierOF, supplierCompanyLink= "","","","","",""
 
+                if (searchResultSet.find('button', class_="site-btn")): continue; # ignore contact div to parse
+
                 if (searchResultSet.find('h2', class_="entity-row-title") and searchResultSet.find('h2', class_="entity-row-title").find(
                         'span')):
-                    supplierCompanyName = searchResultSet.find('h2', class_="h2-item-title").find(
+                    supplierCompanyName = searchResultSet.find('h2', class_="entity-row-title").find(
                         'span').text.strip()
 
                 if (searchResultSet.find('div', class_="borderJUNIOR") and searchResultSet.find('div', class_="borderJUNIOR").find('small')):
-                    date = searchResultSet.find('div', class_="borderJUNIOR").find('small').text.strip()
+                    for small in searchResultSet.find('div', class_="borderJUNIOR").find_all('small'):
+                        if small.text.strip() is not 'VERIFIED':
+                            date = small.text.strip()
 
                 if (searchResultSet.find('span', class_="text-capitalize")):
                     supplierCountry = clean_text_(str(
@@ -715,16 +739,18 @@ def supplierCrawler(url, s, proxy):
                     'searchCategory': searchCategory
                 }
 
-                if (result['supplierCompanyLink'] != []):  # crawl nested company link for cases have supplier company link
-                    tokenizeResutl = tokenize_buyer_or_supplier_text(result)
-                    result = merge(result, tokenizeResutl)
+                tokenizeResutl = tokenize_buyer_or_supplier_text(result)
+                result = merge(result, tokenizeResutl)
 
+                if (result['supplierCompanyLink'] != ""):  # crawl nested company link for cases have supplier company link
                     nestedURLCompany = "https://www.go4worldbusiness.com" + str(result['supplierCompanyLink'])
                     nestedResult = nestedURLGeneralCompanyCrawler(nestedURLCompany, result, s, proxy)
 
                 result = merge (result, nestedResult)
 
-                return result
+                f.write(json.dumps(result))
+                f.write('\n')
+                print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -782,11 +808,8 @@ def main_parse(urls):
 
                     for i in range(TotalPageNum):
                         nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
-                        result = buyerCrawler(nextPageURL, s, proxy)
-                        f.write(json.dumps(result))
-                        f.write('\n')
+                        buyerCrawler(nextPageURL, s, proxy)
 
-                        print(json.dumps(result))
 
 
                 ###############################################################################
@@ -801,11 +824,8 @@ def main_parse(urls):
 
                     for i in range(TotalPageNum):
                         nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
-                        result = supplierCrawler(nextPageURL, s, proxy)
-                        f.write(json.dumps(result))
-                        f.write('\n')
+                        supplierCrawler(nextPageURL, s, proxy)
 
-                        print(json.dumps(result))
 
             except urllib.error.HTTPError as e:
                 print(e)
