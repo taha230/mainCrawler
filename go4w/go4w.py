@@ -9,7 +9,6 @@ import multiprocessing
 import re
 import requests
 from requests.adapters import HTTPAdapter
-from tabletojson import table_to_json, table_to_json_complex
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
 from jsonmerge import merge
@@ -812,7 +811,7 @@ def supplierCrawler(url, s, proxy):
             break
 ###########################################################
 ###########################################################
-def main_parse(urls):
+def main_parse(p, urls):
 
     '''
     function_name: main_parse
@@ -864,32 +863,34 @@ def main_parse(urls):
 
 
         if (isBuyerSelected):
-            lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-            lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
-            if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
-                TotalPageNum = 1
-            else:
-                TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1])  # parse the buyer total page number
+            if (soup.find('ul', class_ ="pagination").find_all('li')):
+                lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+                lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
+                if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
+                    TotalPageNum = 1
+                else:
+                    TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1].split('&')[0])  # parse the buyer total page number
 
-            for i in range(TotalPageNum):
-                nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
-                buyerCrawler(nextPageURL, s, proxy)
+                for i in range(TotalPageNum):
+                    nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
+                    buyerCrawler(nextPageURL, s, proxy)
 
 
 
         ###############################################################################
         elif (isSupplierSelected):
-            lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-            lastPageSupplierhref = lastPagelist[len(lastPagelist) - 2].find('a')['href'].strip()
-            if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
-                TotalPageNum = 1
-            else:
-                TotalPageNum = int(
-                    str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1])  # parse the supplier total page number
+            if (soup.find('ul', class_ ="pagination").find_all('li')):
+                lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+                lastPageSupplierhref = lastPagelist[len(lastPagelist) - 2].find('a')['href'].strip()
+                if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
+                    TotalPageNum = 1
+                else:
+                    TotalPageNum = int(
+                        str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1].split('&')[0])  # parse the supplier total page number
 
-            for i in range(TotalPageNum):
-                nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
-                supplierCrawler(nextPageURL, s, proxy)
+                for i in range(TotalPageNum):
+                    nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
+                    supplierCrawler(nextPageURL, s, proxy)
 
 
 
@@ -915,7 +916,7 @@ parts = chunkIt(urls, 5)
 processes = []
 
 for i in [0,1,2,3,4]:
-    processes.append(multiprocessing.Process(target=main_parse(parts[i]), args=[i,parts[i]]))
+    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
 
 
 for p in processes:
