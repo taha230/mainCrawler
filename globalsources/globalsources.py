@@ -3,17 +3,12 @@ import scrapy
 from scrapy.crawler import CrawlerProcess
 import json
 import urllib
+from incapsula import IncapSession
 import multiprocessing
 import re
 import requests
 from bs4 import BeautifulSoup
-import urlparse3
 from urllib import request as urlrequest
-from socket import timeout
-from socket import error as SocketError
-import errno
-from pymongo import MongoClient
-
 ##################################################
 ##################################################
 headers = {
@@ -21,7 +16,7 @@ headers = {
     'referer': ''
 }
 ##################################################
-def change_proxy(urlCategory):
+def change_proxy():
     '''
     function_name: change_proxy
     input: none
@@ -36,20 +31,8 @@ def change_proxy(urlCategory):
 
     print('********************************************')
     data = ''
-    while True:
-        resp = requests.get(url=url, params=params)
-        if resp.status_code == 200:
-            data = json.loads(resp.text)
-            headers['User-Agent'] = data['randomUserAgent']
-            resp = requests.get(url='https://www.globalsources.com/gsol/I/Automobile-manufacturers/b/2000000003844/3000000151250/-1.htm?view=grid', proxies={'http': data['proxy']}, headers=headers, verify=False)
-            if resp.status_code == 200:
-                break
-            else:
-                print('Proxy not Working ... Trying new one.')
-                continue
-        else:
-            print('Proxy not Working ... Trying new one.')
-            continue
+    resp = requests.get(url=url, params=params)
+    data = json.loads(resp.text)
 
     print('Changing Proxy ... ' + data['proxy'])
     print('********************************************')
@@ -77,7 +60,7 @@ def read_category_url():
     return urls
 ############################################################
 ############################################################
-def product_parse(urls):
+def product_parse(s, urls):
     '''
     function_name: product_parse
     input: url
@@ -94,58 +77,85 @@ def main_parse(urls):
     output: none
     description: first level of crawling
     '''
-
+    proxy, useragent = change_proxy()
+    #s = requests.session()
+    #s.headers.update({'User-Agent': useragent})
+    s= IncapSession(max_retries=None)
+    s.headers['User-Agent'] = useragent
     ########################################################
     for url in urls:
         # categories
-        proxy, useragent = change_proxy(url)
-        headers['User-Agent'] = useragent
         while True:
             try:
+                s.headers['TIME'] = 'June 15th 2019, 12: 29 am'
+                s.headers['REQUEST'] =  url
+                s.headers['SITE'] = 'https://www.eworldtrade.com'
+                s.headers['REFERRER'] = 'http://www.googlebot.com/bot.html'
+                s.headers['REMOTE ADDRESS'] = '117.26.86.90'
+                s.headers['PROXY ADDRESS'] = '117.26.86.90'
+                s.headers['HOST'] = '90.86.26.117.broad.pt.fj.dynamic.163data.com.cn'
+                s.headers['USER AGENT'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
 
-                req = urlrequest.Request(str(url))
-                req.set_proxy(proxy, 'http')
-                req.add_header('User-Agent', useragent)
-                # try:
-                #     response = urlrequest.urlopen(req, timeout=5)
-                # except SocketError as e:
-                #     proxy, useragent = change_proxy()
-                #     headers['User-Agent'] = useragent
-                #     continue
-                #
-                #
-                # soup = BeautifulSoup(response.read().decode('utf8'), 'html.parser')
-                resp = requests.get(url=str(url), proxies={'http': proxy}, headers=headers, verify=False)
+                resp = s.get(url=str(url), proxies={'http': proxy}, headers=headers)
                 soup = BeautifulSoup(resp.content, 'html.parser')
 
-                #u1 = urllib.urlretrieve(str(url))
-                #soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers).content, 'html.parser')
-                items = soup.find_all('div', recursive=True)
-                #items_urls = [i.find('a').attrs['href'] for i in items]
-                ls = soup.select('div.image_tit')
+                ls = soup.select('h3.image_tit')
                 if(not ls):
-                    print('not founding')
+                    print('not founding product titles')
                     proxy, useragent = change_proxy()
-                    headers['User-Agent'] = useragent
+                    s.headers.update({'User-Agent': useragent})
                     continue
 
-                #for iu in items_urls:
-                #    product_parse(iu)
+                total_number_of_products = int(soup.select('h2.listing_h2')[0].text.strip().split()[0].replace(',',''))
+                urls = [l.find('a').attrs['href'] for l in ls]
 
+                products = 80
+                while((products+80) < total_number_of_products):
+                    products = products + 80
+                    while True:
+                        resp = s.get(url=str(url) + '&page=Browse&prodNo=' + str(products), headers=headers, proxies={'http': proxy})
+                        soup = BeautifulSoup(resp.content, 'html.parser')
+
+                        ls = soup.select('h3.image_tit')
+                        if (not ls):
+                            print('not founding product titles')
+                            proxy, useragent = change_proxy()
+                            s.headers.update({'User-Agent': useragent})
+                            continue
+                        else:
+                            break
+                    [urls.append(url) for url in [l.find('a').attrs['href'] for l in ls]]
+
+                if(products < total_number_of_products and products+80 > total_number_of_products):
+                    while True:
+                        resp = s.get(url=str(url) + '&page=Browse&prodNo=' + str(products), headers=headers, proxies={'http': proxy})
+                        soup = BeautifulSoup(resp.content, 'html.parser')
+
+                        ls = soup.select('h3.image_tit')
+                        if (not ls):
+                            print('not founding product titles')
+                            proxy, useragent = change_proxy()
+                            s.headers.update({'User-Agent': useragent})
+                            continue
+                        else:
+                            break
+                    [urls.append(url) for url in [l.find('a').attrs['href'] for l in ls]]
+
+                product_parse(s, urls)
 
             except urllib.error.HTTPError as e:
                 if (e.code == 403):
                     proxy, useragent = change_proxy()
-                    headers['User-Agent'] = useragent
+                    s.headers.update({'User-Agent': useragent})
                     continue
 
             # except:
             #     proxy, useragent = change_proxy()
-            #     headers['User-Agent'] = useragent
+            #     s.headers.update({'User-Agent': useragent})
             #     print('Error Occurred in function and try again')
             #     continue
-            else:
-                break
+            # else:
+            #     break
 
 ############################################################
 ############################################################
