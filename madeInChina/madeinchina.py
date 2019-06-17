@@ -77,108 +77,14 @@ def create_category_url():
     function_name: create_category_url
     input: none
     output: list
-    description: get link of all top categories page in eworldtrade.com
+    description: get link of all top categories page
     '''
-    proxy, useragent = change_proxy()
-    headers['User-Agent'] = useragent
+    with open('madeInChinaTotalUrls.txt') as f:
+        urls = f.readlines()
 
-    while True:
-        html = requests.get("https://www.made-in-china.com/multi-search/prod/catlist/index/B.html", proxies={'http': proxy}, headers=headers).content
-        soup = BeautifulSoup(html, 'html.parser')
-        mores = soup.select('a.cat-more')
-        if(len(mores)>0):
-            break
-        proxy, useragent = change_proxy()
-        headers['User-Agent'] = useragent
+    urls = [x.strip() for x in urls]
 
-    urls = ['https:'+a.attrs['href'] for a in mores]
-
-    return get_links_of_categories(urls)
-############################################################
-def get_links_of_categories(urls):
-    '''
-    function_name: get_links_of_categories
-    input: list
-    output: list
-    description: extract links from each product page
-    '''
-    total_urls = []
-    proxy, useragent = change_proxy()
-    headers['User-Agent'] = useragent
-    cnt = 0
-    for url in urls:
-        while True:
-            try:
-                html = requests.get(url, proxies={'http': proxy}, headers=headers).content
-                soup = BeautifulSoup(html, 'html.parser')
-
-                if(soup.select('a.view-types-tab')[0]):
-                    total_urls.append('https://www.made-in-china.com' + soup.select('a.view-types-tab')[0].attrs['href'])
-                    cnt = cnt + 1
-                    print(f'{cnt} from {}has been done')
-                    break
-                proxy, useragent = change_proxy()
-                headers['User-Agent'] = useragent
-                continue
-
-            except urllib.error.HTTPError as e:
-                if (e.code == 403):
-                    proxy, useragent = change_proxy()
-                    headers['User-Agent'] = useragent
-                    continue
-            except:
-                 proxy, useragent = change_proxy()
-                 headers['User-Agent'] = useragent
-                 continue
-
-            else:
-                break
-
-    return get_links_categories_final(total_urls)
-############################################################
-def get_links_categories_final(urls):
-    '''
-    function_name: get_links_categories_final
-    input: list
-    output: list
-    description: extract links from each sub-product page
-    '''
-    total_urls = []
-    proxy, useragent = change_proxy()
-    s = requests.session()
-    s.headers['User-Agent'] = useragent
-    for url in urls:
-        while True:
-            try:
-                html = s.get(url, proxies={'http': proxy}).content
-                soup = BeautifulSoup(html, 'html.parser')
-
-                total_urls.append(soup.select('a.view-types-tab')[0].attrs['href'])
-                if (len(atags) > 0):
-                    change_proxy_counter = change_proxy_counter + 1
-                    print(f'{url} has been done.')
-                    break
-                proxy, useragent = change_proxy()
-                s = requests.session()
-                s.headers['User-Agent'] = useragent
-                continue
-
-            except urllib.error.HTTPError as e:
-                if (e.code == 403):
-                    proxy, useragent = change_proxy()
-                    s = requests.session()
-                    s.headers['User-Agent'] = useragent
-                    continue
-            except:
-                proxy, useragent = change_proxy()
-                s = requests.session()
-                s.headers['User-Agent'] = useragent
-                continue
-
-            else:
-                break
-
-    return get_links_categories_final(total_urls)
+    return urls
 ############################################################
 def company_parse(url,data, s):
     '''
