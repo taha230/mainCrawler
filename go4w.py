@@ -13,6 +13,22 @@ from tabletojson import table_to_json, table_to_json_complex
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
 from jsonmerge import merge
+from logging import exception
+from scrapy import signals
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
+from twisted.internet.error import TCPTimedOutError, TimeoutError
+import logging
+from twisted.internet import defer
+from twisted.internet.error import TimeoutError, DNSLookupError, \
+        ConnectionRefusedError, ConnectionDone, ConnectError, \
+        ConnectionLost, TCPTimedOutError
+from twisted.web.client import ResponseFailed
+import multiprocessing
+from scrapy.exceptions import NotConfigured
+from scrapy.utils.response import response_status_message
+from scrapy.core.downloader.handlers.http11 import TunnelError
+from scrapy.utils.python import global_object_name
+import requests
 ##################################################
 ##################################################
 headers = {
@@ -74,6 +90,24 @@ def change_proxy():
     print('Changing Proxy ... ' + data['proxy'])
     print('********************************************')
     return data['proxy'], data['randomUserAgent']
+
+##################################################
+def chunkIt(seq, num):
+    '''
+    function_name: chunkIt
+    input: list, number of parts
+    output: list of lists
+    description: split list with approximate num of elements in each parts
+    '''
+    avg = len(seq) / float(num)
+    out = []
+    last = 0.0
+
+    while last < len(seq):
+        out.append(seq[int(last):int(last + avg)])
+        last += avg
+
+    return out
 
 ##################################################
 def clean_html(text):
@@ -232,7 +266,7 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
             newResult = {}
 
             companyLogo = ""
-            if (soup.find('div', class_="gold-menu")):
+            if (soup.find('div', class_="gold-menu") and soup.find('div', class_="gold-menu").find('img')):
                 companyLogo = soup.find('div', class_="gold-menu").find('img')['src']
 
             if (soup.find('div', class_="row")):
@@ -259,7 +293,8 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in OurcompanyCrawler function and try again')
@@ -325,7 +360,8 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLProductsCompanyCrawler function and try again')
@@ -367,7 +403,8 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
@@ -421,7 +458,8 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLFacilitiesCompanyCrawler function and try again')
@@ -462,7 +500,8 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLNewsRoomCompanyCrawler function and try again')
@@ -481,7 +520,7 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
     description: crawl all inforamtion from company nested url
     '''
 
-    url = "https://www.go4worldbusiness.com/pref_product/view/959532/iron-ore.html"
+    #url = "https://www.go4worldbusiness.com/pref_product/view/959532/iron-ore.html"
 
     while True:
         try:
@@ -508,7 +547,7 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
 
                 companyLogo = ""
                 newResult = {}
-                if (soup.find('div', class_="gold-menu")):
+                if (soup.find('div', class_="gold-menu") and soup.find('div', class_="gold-menu").find('img')):
                     companyLogo = soup.find('div', class_="gold-menu").find('img')['src']
 
                 if (soup.find('div', class_="row")):
@@ -565,7 +604,8 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLGeneralCompanyCrawler function and try again')
@@ -618,9 +658,9 @@ def buyerCrawler(url, s, proxy):
                 if (searchResultSet.find('div') and searchResultSet.find('div').find('a')):
                     aList = searchResultSet.find('div', class_="mar-top-10").find_all('a')
                     for a in aList:
-                        buyerBuyerOF += clean_text_(a.text.strip()).replace('Buyer Of', '')
+                        buyerBuyerOF += ( " " + clean_text_(a.text.strip()).replace('Buyer Of', ''))
 
-                if (searchResultSet.find('a')['href']):
+                if (searchResultSet.find('a')):
                     buyerCompanyLink = searchResultSet.find('a')['href']
 
                 isSupplier = False
@@ -644,6 +684,7 @@ def buyerCrawler(url, s, proxy):
 
                 tokenizeResult = tokenize_buyer_or_supplier_text(result)
                 result = merge(result, tokenizeResult)
+                nestedResult = {}
 
                 if (result['buyerCompanyName'] != ""):  # crawl nested company link for cases have type buyerCompanyName (not person link and with star in front)
                     nestedURLCompany = "https://www.go4worldbusiness.com" + str(result['buyerCompanyLink'])
@@ -661,7 +702,8 @@ def buyerCrawler(url, s, proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in buyerCrawler function and try again')
@@ -715,9 +757,9 @@ def supplierCrawler(url, s, proxy):
                 if (searchResultSet.find('div') and searchResultSet.find('div').find('a')):
                     aList = searchResultSet.find('div', class_="mar-top-10").find_all('a')
                     for a in aList:
-                        supplierSupplierOF += clean_text_(str(a.text.strip()).replace('Supplier Of',''))
+                        supplierSupplierOF += ( " " + clean_text_(str(a.text.strip()).replace('Supplier Of','')))
 
-                if (searchResultSet.find('a')['href']):
+                if (searchResultSet.find('a')):
                     supplierCompanyLink = searchResultSet.find('a')['href']
 
 
@@ -742,6 +784,8 @@ def supplierCrawler(url, s, proxy):
                 tokenizeResutl = tokenize_buyer_or_supplier_text(result)
                 result = merge(result, tokenizeResutl)
 
+                nestedResult = {}
+
                 if (result['supplierCompanyLink'] != ""):  # crawl nested company link for cases have supplier company link
                     nestedURLCompany = "https://www.go4worldbusiness.com" + str(result['supplierCompanyLink'])
                     nestedResult = nestedURLGeneralCompanyCrawler(nestedURLCompany, result, s, proxy)
@@ -757,7 +801,8 @@ def supplierCrawler(url, s, proxy):
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 continue
-        except:
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
             proxy, useragent = change_proxy()
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in supplierCrawler function and try again')
@@ -796,44 +841,14 @@ def main_parse(urls):
                 html = s.get(str(url), proxies={'http': proxy}).content
                 soup = BeautifulSoup(html, 'html.parser')
 
-
-                ########################################################################
-                if (isBuyerSelected):
-                    lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-                    lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
-                    if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
-                        TotalPageNum = 1
-                    else:
-                        TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1])  # parse the buyer total page number
-
-                    for i in range(TotalPageNum):
-                        nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
-                        buyerCrawler(nextPageURL, s, proxy)
-
-
-
-                ###############################################################################
-                elif (isSupplierSelected):
-                    lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-                    lastPageSupplierhref = lastPagelist[len(lastPagelist) - 2].find('a')['href'].strip()
-                    if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
-                        TotalPageNum = 1
-                    else:
-                        TotalPageNum = int(
-                            str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1])  # parse the supplier total page number
-
-                    for i in range(TotalPageNum):
-                        nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
-                        supplierCrawler(nextPageURL, s, proxy)
-
-
             except urllib.error.HTTPError as e:
                 print(e)
                 if (e.code == 403):
                     proxy, useragent = change_proxy()
                     s.headers.update({'User-Agent': useragent})
                     continue
-            except:
+            except EXCEPTIONS_TO_RETRY as e:
+                print (e)
                 proxy, useragent = change_proxy()
                 s.headers.update({'User-Agent': useragent})
                 print('Error Occurred in main_parse function and try again')
@@ -842,13 +857,75 @@ def main_parse(urls):
             else:
                 break
 
+
+
+                ########################################################################
+
+
+
+        if (isBuyerSelected):
+            lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+            lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
+            if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
+                TotalPageNum = 1
+            else:
+                TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1])  # parse the buyer total page number
+
+            for i in range(TotalPageNum):
+                nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
+                buyerCrawler(nextPageURL, s, proxy)
+
+
+
+        ###############################################################################
+        elif (isSupplierSelected):
+            lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+            lastPageSupplierhref = lastPagelist[len(lastPagelist) - 2].find('a')['href'].strip()
+            if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
+                TotalPageNum = 1
+            else:
+                TotalPageNum = int(
+                    str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1])  # parse the supplier total page number
+
+            for i in range(TotalPageNum):
+                nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
+                supplierCrawler(nextPageURL, s, proxy)
+
+
+
+
 ############################################################
+
+
+EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
+                           ConnectionRefusedError, ConnectionDone, ConnectError,
+                           ConnectionLost, TCPTimedOutError, ResponseFailed,
+                           IOError, TunnelError)
+
+f = open('go4w_result.json','w')
+
+f.close() # to erase the previous result
 
 f = open('go4w_result.json','a')
 
-
 urls = create_category_url()
-main_parse(urls)
+
+parts = chunkIt(urls, 5)
+
+processes = []
+
+for i in [0,1,2,3,4]:
+    processes.append(multiprocessing.Process(target=main_parse(parts[i]), args=[i,parts[i]]))
+
+
+for p in processes:
+    p.start()
+
+for p in processes:
+    p.join()
+
+
+# main_parse(urls)
 
 f.close()
 
