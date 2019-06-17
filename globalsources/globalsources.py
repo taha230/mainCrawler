@@ -78,19 +78,25 @@ def main_parse(urls):
     description: first level of crawling
     '''
     proxy, useragent = change_proxy()
-    s = requests.session()
-    s.headers.update({'User-Agent': useragent})
+    #s = requests.session()
+    #s.headers.update({'User-Agent': useragent})
+    s= IncapSession(max_retries=None)
+    s.headers['User-Agent'] = useragent
     ########################################################
     for url in urls:
         # categories
         while True:
             try:
-                # params = {'hostname': 'www.globalsources.com',
-                #           'prodNo': '400', 'prod_id': '-1', 'action': 'GetPoint', 'resetbean': 'on',
-                #           'view': 'grid', 'language': 'en', 'design': 'clean', 'point_id': '3000000151250', 'catalog_id': '2000000003844'}
-                # resp = s.get(url=str('https://www.globalsources.com/gsol/GeneralManager'), proxies={'http': proxy}, headers=headers, json=params)
-                # json_response = resp.json()
-                # resp = s.get(url=str(url), proxies={'http': proxy}, headers=headers, timeout=7)
+                s.headers['TIME'] = 'June 15th 2019, 12: 29 am'
+                s.headers['REQUEST'] =  url
+                s.headers['SITE'] = 'https://www.eworldtrade.com'
+                s.headers['REFERRER'] = 'http://www.googlebot.com/bot.html'
+                s.headers['REMOTE ADDRESS'] = '117.26.86.90'
+                s.headers['PROXY ADDRESS'] = '117.26.86.90'
+                s.headers['HOST'] = '90.86.26.117.broad.pt.fj.dynamic.163data.com.cn'
+                s.headers['USER AGENT'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+
+                resp = s.get(url=str(url), proxies={'http': proxy}, headers=headers)
                 soup = BeautifulSoup(resp.content, 'html.parser')
 
                 ls = soup.select('h3.image_tit')
@@ -143,13 +149,13 @@ def main_parse(urls):
                     s.headers.update({'User-Agent': useragent})
                     continue
 
-            except:
-                proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
-                print('Error Occurred in function and try again')
-                continue
-            else:
-                break
+            # except:
+            #     proxy, useragent = change_proxy()
+            #     s.headers.update({'User-Agent': useragent})
+            #     print('Error Occurred in function and try again')
+            #     continue
+            # else:
+            #     break
 
 ############################################################
 ############################################################

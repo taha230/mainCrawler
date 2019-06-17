@@ -80,23 +80,22 @@ def create_category_url():
     description: get link of all top categories page in eworldtrade.com
     '''
     proxy, useragent = change_proxy()
-    s = requests.session()
-    s.headers['User-Agent'] = useragent
+    headers['User-Agent'] = useragent
 
     while True:
-        html = s.get("https://www.eworldtrade.com/products/", proxies={'http': proxy}).content
+        html = requests.get("https://www.made-in-china.com/multi-search/prod/catlist/index/B.html", proxies={'http': proxy}, headers=headers).content
         soup = BeautifulSoup(html, 'html.parser')
-        h5s = soup.find_all('h5')
-        if(len(h5s)>0):
+        mores = soup.select('a.cat-more')
+        if(len(mores)>0):
             break
         proxy, useragent = change_proxy()
-        s.headers['User-Agent'] = useragent
+        headers['User-Agent'] = useragent
 
-    urls = [h5.find('a').attrs['href'] for h5 in h5s if h5.find('a')]
+    urls = ['https:'+a.attrs['href'] for a in mores]
 
-    return get_links_of_categories(s, s.cookies.get_dict()['XSRF-TOKEN'], proxy, urls)
+    return get_links_of_categories(urls)
 ############################################################
-def get_links_of_categories(s, xsrf_token, proxy, urls):
+def get_links_of_categories(urls):
     '''
     function_name: get_links_of_categories
     input: list
@@ -104,15 +103,57 @@ def get_links_of_categories(s, xsrf_token, proxy, urls):
     description: extract links from each product page
     '''
     total_urls = []
-    change_proxy_counter = 0
+    proxy, useragent = change_proxy()
+    headers['User-Agent'] = useragent
+    cnt = 0
     for url in urls:
         while True:
             try:
-                time.sleep(randint(5,10))
+                html = requests.get(url, proxies={'http': proxy}, headers=headers).content
+                soup = BeautifulSoup(html, 'html.parser')
+
+                if(soup.select('a.view-types-tab')[0]):
+                    total_urls.append('https://www.made-in-china.com' + soup.select('a.view-types-tab')[0].attrs['href'])
+                    cnt = cnt + 1
+                    print(f'{cnt} from {}has been done')
+                    break
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                continue
+
+            except urllib.error.HTTPError as e:
+                if (e.code == 403):
+                    proxy, useragent = change_proxy()
+                    headers['User-Agent'] = useragent
+                    continue
+            except:
+                 proxy, useragent = change_proxy()
+                 headers['User-Agent'] = useragent
+                 continue
+
+            else:
+                break
+
+    return get_links_categories_final(total_urls)
+############################################################
+def get_links_categories_final(urls):
+    '''
+    function_name: get_links_categories_final
+    input: list
+    output: list
+    description: extract links from each sub-product page
+    '''
+    total_urls = []
+    proxy, useragent = change_proxy()
+    s = requests.session()
+    s.headers['User-Agent'] = useragent
+    for url in urls:
+        while True:
+            try:
                 html = s.get(url, proxies={'http': proxy}).content
                 soup = BeautifulSoup(html, 'html.parser')
 
-                atags = soup.select('a.text-muted')
+                total_urls.append(soup.select('a.view-types-tab')[0].attrs['href'])
                 if (len(atags) > 0):
                     change_proxy_counter = change_proxy_counter + 1
                     print(f'{url} has been done.')
@@ -124,7 +165,6 @@ def get_links_of_categories(s, xsrf_token, proxy, urls):
 
             except urllib.error.HTTPError as e:
                 if (e.code == 403):
-                    time.sleep(randint(5,10))
                     proxy, useragent = change_proxy()
                     s = requests.session()
                     s.headers['User-Agent'] = useragent
@@ -133,20 +173,12 @@ def get_links_of_categories(s, xsrf_token, proxy, urls):
                 proxy, useragent = change_proxy()
                 s = requests.session()
                 s.headers['User-Agent'] = useragent
-                time.sleep(randint(5,10))
                 continue
 
             else:
                 break
 
-        for a in atags:
-            total_urls.append(a.attrs['href'])
-
-    f = open('eworldTradeLinks.txt','w')
-    for t in total_urls:
-        f.wrtie(t + '\n')
-    f.close()
-    return total_urls
+    return get_links_categories_final(total_urls)
 ############################################################
 def company_parse(url,data, s):
     '''
