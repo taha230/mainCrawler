@@ -811,7 +811,7 @@ def supplierCrawler(url, s, proxy):
             break
 ###########################################################
 ###########################################################
-def main_parse(urls):
+def main_parse(p, urls):
 
     '''
     function_name: main_parse
@@ -916,7 +916,7 @@ parts = chunkIt(urls, 5)
 processes = []
 
 for i in [0,1,2,3,4]:
-    processes.append(multiprocessing.Process(target=main_parse(parts[i]), args=[i,parts[i]]))
+    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
 
 
 for p in processes:
