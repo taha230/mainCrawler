@@ -154,69 +154,37 @@ def company_parse(url,data, s):
             break
 ############################################################
 ############################################################
-def product_parse(url, s):
+def product_parse(url):
     '''
     function_name: product_parse
     input: url
     output: none
     description: crawl product page
     '''
-    data = {}
-    proxy, useragent = '',''
     ########################################################
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
-            soup = BeautifulSoup(html, 'html.parser')
+           proxy, useragent = change_proxy()
+           headers['User-Agent'] = useragent
+           html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
+           soup = BeautifulSoup(html, 'html.parser')
 
-            title, price, min_order, unit = None,None,None,None
-            title = soup.findAll('h1')[0].text.strip()
+           product_links = soup.select('h2.product-name')
 
-            try:
-                price = soup.select("span.ma-ref-price")[0].text.replace("\\n", "").strip()
-                min_order = soup.select("span.ma-min-order")[0].text.strip()
-                unit = soup.select("span.ma-min-order")[0].text.strip().split('/')[1]
-            except:
-                pass
-
-            if title:
-                data['product_name'] = title
-
-            if price:
-                data['product_price'] = price
-
-            if min_order:
-                data['product_min_order'] = min_order
-
-            if unit:
-                data['product_unit'] = unit
-
-            parts = soup.find_all('dl', class_="do-entry-item")
-            for p in parts:
-                key = re.sub(' +', ' ', p.find('dt').text.strip().replace(':','').replace("\\n", "").replace('\n',''))
-                value = re.sub(' +', ' ', p.find('dd').text.strip().replace("\\n", "").replace('\n',''))
-                if not 'picture' in str(key):
-                    data[('product_' + str(key)).replace(' ','_')] = value
-
-            company_url = soup.select('div.card-footer')[0].find('a').attrs['href']
-            data['company_url'] = company_url
-
-            company_parse(company_url, data, s)
+           if(len(product_links) > 0):
+                return [('https:' + p.find('a').attrs['href']) for p in product_links]
 
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except:
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in product_parse function and try again')
             continue
-
-        else:
-            break
 
 
 ###########################################################
@@ -228,45 +196,40 @@ def main_parse(urls):
     output: none
     description: first level of crawling
     '''
-    proxy, useragent = change_proxy()
-    s = requests.session()
-    s.headers.update({'User-Agent': useragent})
     ########################################################
+    total_urls = []
     for url in urls:
-        # Products
-        for i in range(1, 101):
-            while True:
-                try:
-                    html = s.get(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i), proxies={'http': proxy}).content
-                    soup = BeautifulSoup(html, 'html.parser')
+        while True:
+            try:
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
+                soup = BeautifulSoup(html, 'html.parser')
 
-                    items = soup.find_all('h2', class_='title')
+                product_links = soup.select('h2.product-name')
 
-                    if(len(items) == 0):
-                        proxy, useragent = change_proxy()
-                        s.headers.update({'User-Agent': useragent})
-                        print('cant get list of products')
-                        continue
+                if(len(product_links) > 0):
+                    [total_urls.append('https:' + p.find('a').attrs['href']) for p in product_links]
 
-                    items_urls = [i.find('a').attrs['href'] for i in items]
+                    total_pages = int(soup.select('a.page-dis')[0].text)
 
-                    for iu in items_urls:
-                        product_parse("https:" + str(iu), s)
-
-                except urllib.error.HTTPError as e:
-                    print(e)
-                    if (e.code == 403):
-                        proxy, useragent = change_proxy()
-                        headers['User-Agent'] = useragent
-                        continue
-                except:
-                    proxy, useragent = change_proxy()
-                    s.headers.update({'User-Agent': useragent})
-                    print('Error Occurred in main_parse function and try again')
-                    continue
-
-                else:
+                    main_addres = 'https:' + '-'.join(soup.select('div.page-num')[0].find('a').attrs['href'].split('.html')[0].split('-')[:-1])
+                    for i in range(3,total_pages):
+                        lls = product_parse(main_addres + '-' + str(i) + '.html')
+                        [total_urls.append(l.attrs['href']) for l in lls]
                     break
+
+            except urllib.error.HTTPError as e:
+                 print(e)
+                 if (e.code == 403):
+                    proxy, useragent = change_proxy()
+                    headers['User-Agent'] = useragent
+                    continue
+            except:
+                 proxy, useragent = change_proxy()
+                 headers['User-Agent'] = useragent
+                 print('Error Occurred in main_parse function and try again')
+                 continue
 
 ############################################################
 ############################################################
@@ -274,7 +237,11 @@ def main_parse(urls):
 #f = open('alibaba_result.json','a')
 
 urls = create_category_url()
-main_parse(urls)
+product_urls = main_parse(urls)
+
+
+
+
 #parts = chunkIt(urls, 5)
 
 processes = []
