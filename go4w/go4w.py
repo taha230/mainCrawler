@@ -265,7 +265,7 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
             newResult = {}
 
             companyLogo = ""
-            if (soup.find('div', class_="gold-menu") and soup.find('div', class_="gold-menu").find('img')):
+            if (soup.find('div', class_="gold-menu") and soup.find('div', class_="gold-menu").find('img') and soup.find('div', class_="gold-menu").find('img')['src']):
                 companyLogo = soup.find('div', class_="gold-menu").find('img')['src']
 
             if (soup.find('div', class_="row")):
@@ -299,6 +299,10 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
             print('Error Occurred in OurcompanyCrawler function and try again')
             continue
 
+        except:
+            print('Exception occured in OurcompanyCrawler')
+            return {}
+
         else:
             break
 
@@ -326,8 +330,9 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
 
             for h5Section in h5List:
                 divParent = h5Section.parent.parent.parent
-                productTextList.append(clean_text_(divParent.findNext('p').text))
-                if ('.jpg' in divParent.findNext('img')['src']) :
+                if (divParent.findNext('p')):
+                    productTextList.append(clean_text_(divParent.findNext('p').text))
+                if (divParent.findNext('img') and divParent.findNext('img')['src'] and '.jpg' in divParent.findNext('img')['src']) :
                     ProductImageSrcList.append(divParent.findNext('img')['src'])
                 if (h5Section.find('span')):
                     productNameList.append(clean_text_(h5Section.find('span').text))
@@ -365,6 +370,9 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLProductsCompanyCrawler function and try again')
             continue
+        except:
+            print('Exception occured in nestedURLProductsCompanyCrawler')
+            return {}
 
         else:
             break
@@ -408,6 +416,10 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
             continue
+
+        except:
+            print('Exception occured in nestedURLManagementCompanyCrawler')
+            return {}
 
         else:
             break
@@ -463,6 +475,9 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLFacilitiesCompanyCrawler function and try again')
             continue
+        except:
+            print('Exception occured in nestedURLFacilitiesCompanyCrawler')
+            return {}
 
         else:
             break
@@ -505,6 +520,9 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLNewsRoomCompanyCrawler function and try again')
             continue
+        except:
+            print('Exception occured in nestedURLNewsRoomCompanyCrawler')
+            return {}
 
         else:
             break
@@ -525,28 +543,32 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
         try:
             html = s.get(str(url), proxies={'http': proxy}).content
             soup = BeautifulSoup(html, 'html.parser')
-            mainTabList = soup.find('ul', class_="nav-pills").find_all('li')
+            mainTabList = []
+
+            if (soup.find('ul', class_="nav-pills") and soup.find('ul', class_="nav-pills").find_all('li')):
+                mainTabList = soup.find('ul', class_="nav-pills").find_all('li')
 
             isOurCompanySelected, isProductsSelected, isManagementSelected, isFacilitiesSelector, isNewsRoomSelector = None, None, None, None, None
             nestedResult ={}
 
             for  i in range(len(mainTabList)):
-                if ('Company' in mainTabList[i].find('a').text):
-                    isOurCompanySelected = mainTabList[i].find('a')['href']
-                elif ('Products' in mainTabList[i].find('a').text):
-                    isProductsSelected = mainTabList[i].find('a')['href']
-                elif ('Management' in mainTabList[i].find('a').text):
-                    isManagementSelected = mainTabList[i].find('a')['href']
-                elif ('Facilities' in mainTabList[i].find('a').text):
-                    isFacilitiesSelector = mainTabList[i].find('a')['href']
-                elif ('News' in mainTabList[i].find('a').text):
-                    isNewsRoomSelector = mainTabList[i].find('a')['href']
+                if (mainTabList[i].find('a')):
+                    if ('Company' in mainTabList[i].find('a').text):
+                        isOurCompanySelected = mainTabList[i].find('a')['href']
+                    elif ('Products' in mainTabList[i].find('a').text):
+                        isProductsSelected = mainTabList[i].find('a')['href']
+                    elif ('Management' in mainTabList[i].find('a').text):
+                        isManagementSelected = mainTabList[i].find('a')['href']
+                    elif ('Facilities' in mainTabList[i].find('a').text):
+                        isFacilitiesSelector = mainTabList[i].find('a')['href']
+                    elif ('News' in mainTabList[i].find('a').text):
+                        isNewsRoomSelector = mainTabList[i].find('a')['href']
 
             if ("html" in str(isOurCompanySelected) and (str(isOurCompanySelected) in url)):  # the second condition for nested page in company page
 
                 companyLogo = ""
                 newResult = {}
-                if (soup.find('div', class_="gold-menu") and soup.find('div', class_="gold-menu").find('img')):
+                if (soup.find('div', class_="gold-menu") and soup.find('div', class_="gold-menu").find('img') and soup.find('div', class_="gold-menu").find('img')['src']):
                     companyLogo = soup.find('div', class_="gold-menu").find('img')['src']
 
                 if (soup.find('div', class_="row")):
@@ -609,6 +631,9 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in nestedURLGeneralCompanyCrawler function and try again')
             continue
+        except:
+            print('Exception occured in nestedURLGeneralCompanyCrawler')
+            return {}
 
         else:
             break
@@ -655,11 +680,11 @@ def buyerCrawler(url, s, proxy):
                     buyerText = searchResultSet.find('div',class_="entity-row-description-search").find('p').text.strip()
 
                 if (searchResultSet.find('div') and searchResultSet.find('div').find('a')):
-                    aList = searchResultSet.find('div', class_="mar-top-10").find_all('a')
+                    aList = searchResultSet.find('div').find_all('a')
                     for a in aList:
                         buyerBuyerOF += ( " " + clean_text_(a.text.strip()).replace('Buyer Of', ''))
 
-                if (searchResultSet.find('a')):
+                if (searchResultSet.find('a') and searchResultSet.find('a')['href']):
                     buyerCompanyLink = searchResultSet.find('a')['href']
 
                 isSupplier = False
@@ -694,7 +719,7 @@ def buyerCrawler(url, s, proxy):
 
                 f.write(json.dumps(result))
                 f.write('\n')
-                print(json.dumps(result))
+                #print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -708,6 +733,9 @@ def buyerCrawler(url, s, proxy):
             print('Error Occurred in buyerCrawler function and try again')
             continue
 
+        except:
+            print('Exception occured in buyerCrawler')
+            break
         else:
             break
 
@@ -754,7 +782,7 @@ def supplierCrawler(url, s, proxy):
                                                      class_="entity-row-description-search").find('p').text.strip()
 
                 if (searchResultSet.find('div') and searchResultSet.find('div').find('a')):
-                    aList = searchResultSet.find('div', class_="mar-top-10").find_all('a')
+                    aList = searchResultSet.find('div').find_all('a')
                     for a in aList:
                         supplierSupplierOF += ( " " + clean_text_(str(a.text.strip()).replace('Supplier Of','')))
 
@@ -793,7 +821,7 @@ def supplierCrawler(url, s, proxy):
 
                 f.write(json.dumps(result))
                 f.write('\n')
-                print(json.dumps(result))
+                #print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -806,6 +834,10 @@ def supplierCrawler(url, s, proxy):
             s.headers.update({'User-Agent': useragent})
             print('Error Occurred in supplierCrawler function and try again')
             continue
+
+        except:
+            print('Exception occured in supplierCrawler')
+            break
 
         else:
             break
@@ -825,6 +857,7 @@ def main_parse(p, urls):
     s.headers.update({'User-Agent': useragent})
 
     ########################################################
+    cnt_url = 0
     for url in urls:
         # categories
 
@@ -865,15 +898,17 @@ def main_parse(p, urls):
         if (isBuyerSelected):
             if (soup.find('ul', class_ ="pagination").find_all('li')):
                 lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-                lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
-                if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
-                    TotalPageNum = 1
-                else:
-                    TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1].split('&')[0])  # parse the buyer total page number
+                if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
 
-                for i in range(TotalPageNum):
-                    nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
-                    buyerCrawler(nextPageURL, s, proxy)
+                    lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
+                    if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
+                        TotalPageNum = 1
+                    else:
+                        TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1].split('&')[0])  # parse the buyer total page number
+
+                    for i in range(TotalPageNum):
+                        nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
+                        buyerCrawler(nextPageURL, s, proxy)
 
 
 
@@ -881,19 +916,19 @@ def main_parse(p, urls):
         elif (isSupplierSelected):
             if (soup.find('ul', class_ ="pagination").find_all('li')):
                 lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-                lastPageSupplierhref = lastPagelist[len(lastPagelist) - 2].find('a')['href'].strip()
-                if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
-                    TotalPageNum = 1
-                else:
-                    TotalPageNum = int(
-                        str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1].split('&')[0])  # parse the supplier total page number
+                if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
+                    lastPageSupplierhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
+                    if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
+                        TotalPageNum = 1
+                    else:
+                        TotalPageNum = int(
+                            str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1].split('&')[0])  # parse the supplier total page number
 
-                for i in range(TotalPageNum):
-                    nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
-                    supplierCrawler(nextPageURL, s, proxy)
-
-
-
+                    for i in range(TotalPageNum):
+                        nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
+                        supplierCrawler(nextPageURL, s, proxy)
+        cnt_url = cnt_url + 1
+        print (f'process {p}: {cnt_url} from {len(urls)} has been done.')
 
 ############################################################
 
@@ -911,11 +946,12 @@ f = open('go4w_result.json','a')
 
 urls = create_category_url()
 
-parts = chunkIt(urls, 5)
+number_processes = 5
+parts = chunkIt(urls, number_processes)
 
 processes = []
 
-for i in [0,1,2,3,4]:
+for i in range(number_processes):
     processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
 
 
@@ -926,7 +962,7 @@ for p in processes:
     p.join()
 
 
-# main_parse(urls)
+#main_parse(1 ,urls)
 
 f.close()
 
