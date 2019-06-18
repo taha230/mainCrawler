@@ -120,7 +120,7 @@ def read_category_url():
     description: add categories to urls from CategoriesLinks_globalresources.txt file
     '''
 
-    file = open('CategoriesLinks_indiamart.txt', 'r')
+    file = open('indiamart_categories.txt', 'r')
     categories = file.read().split('\n')
 
 
@@ -315,7 +315,7 @@ def tokenize_buyer_or_supplier_text(result):
 
 ############################################################
 
-def main_parse(urls):
+def main_parse(p, urls):
     '''
     function_name: main_parse
     input: list
@@ -380,6 +380,6 @@ proxy, useragent = change_proxy()
 s = requests.session()
 s.headers.update({'User-Agent': useragent})
 
-create_category_url(s)
-#urls = read_category_url()
-#main_parse(urls)
+#create_category_url(s)
+urls = read_category_url()
+main_parse(1 ,urls)
