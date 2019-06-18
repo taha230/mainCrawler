@@ -83,8 +83,19 @@ def change_proxy():
 
     print('********************************************')
     data = ''
-    resp = requests.get(url=url, params=params)
-    data = json.loads(resp.text)
+
+    while True:
+        try:
+            resp = requests.get(url=url, params=params, timeout=5)
+            data = json.loads(resp.text)
+
+        except:
+            print('Exception occured in changeproxy')
+            continue
+
+        else:
+            break
+
 
     print('Changing Proxy ... ' + data['proxy'])
     print('********************************************')
@@ -260,7 +271,7 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             newResult = {}
 
@@ -319,7 +330,7 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             productTextList = []
@@ -390,7 +401,7 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             managementText = ""
@@ -437,7 +448,7 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             newResult = {}
@@ -495,7 +506,7 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             newsRoomText = ""
@@ -541,7 +552,7 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             mainTabList = []
 
@@ -651,7 +662,7 @@ def buyerCrawler(url, s, proxy):
     ########################################################
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             buyerList = soup.find_all('div', class_ ="search-results")
 
@@ -719,7 +730,7 @@ def buyerCrawler(url, s, proxy):
 
                 f.write(json.dumps(result))
                 f.write('\n')
-                #print(json.dumps(result))
+                print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -752,7 +763,7 @@ def supplierCrawler(url, s, proxy):
     ########################################################
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}).content
+            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             supplierList = soup.find_all('div', class_="search-results")
 
@@ -821,7 +832,7 @@ def supplierCrawler(url, s, proxy):
 
                 f.write(json.dumps(result))
                 f.write('\n')
-                #print(json.dumps(result))
+                print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
@@ -870,8 +881,43 @@ def main_parse(p, urls):
 
         while True:
             try:
-                html = s.get(str(url), proxies={'http': proxy}).content
+                html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
                 soup = BeautifulSoup(html, 'html.parser')
+
+                if (isBuyerSelected):
+                    if (soup.find('ul', class_ ="pagination").find_all('li')):
+                        lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+                        if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
+
+                            lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
+                            if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
+                                TotalPageNum = 1
+                            else:
+                                TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1].split('&')[0])  # parse the buyer total page number
+
+                            for i in range(TotalPageNum):
+                                nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
+                                buyerCrawler(nextPageURL, s, proxy)
+
+
+
+                ###############################################################################
+                elif (isSupplierSelected):
+                    if (soup.find('ul', class_ ="pagination").find_all('li')):
+                        lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
+                        if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
+                            lastPageSupplierhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
+                            if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
+                                TotalPageNum = 1
+                            else:
+                                TotalPageNum = int(
+                                    str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1].split('&')[0])  # parse the supplier total page number
+
+                            for i in range(TotalPageNum):
+                                nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
+                                supplierCrawler(nextPageURL, s, proxy)
+                cnt_url = cnt_url + 1
+                print (f'process {p}: {cnt_url} from {len(urls)} has been done.')
 
             except urllib.error.HTTPError as e:
                 print(e)
@@ -890,45 +936,6 @@ def main_parse(p, urls):
                 break
 
 
-
-                ########################################################################
-
-
-
-        if (isBuyerSelected):
-            if (soup.find('ul', class_ ="pagination").find_all('li')):
-                lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-                if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
-
-                    lastPageBuyerhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
-                    if ("pg_buyers" not in lastPageBuyerhref):  # category has only one page of buyer
-                        TotalPageNum = 1
-                    else:
-                        TotalPageNum = int(str(lastPageBuyerhref).split('pg_buyers')[1].split('=')[1].split('&')[0])  # parse the buyer total page number
-
-                    for i in range(TotalPageNum):
-                        nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
-                        buyerCrawler(nextPageURL, s, proxy)
-
-
-
-        ###############################################################################
-        elif (isSupplierSelected):
-            if (soup.find('ul', class_ ="pagination").find_all('li')):
-                lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
-                if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
-                    lastPageSupplierhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
-                    if ("pg_suppliers" not in lastPageSupplierhref):  # category has only one page of buyer
-                        TotalPageNum = 1
-                    else:
-                        TotalPageNum = int(
-                            str(lastPageSupplierhref).split('pg_suppliers')[1].split('=')[1].split('&')[0])  # parse the supplier total page number
-
-                    for i in range(TotalPageNum):
-                        nextPageURL = url+"?region=worldwide&pg_suppliers=" + str(i+1) # +1 to start from 1 to supplierPageNum
-                        supplierCrawler(nextPageURL, s, proxy)
-        cnt_url = cnt_url + 1
-        print (f'process {p}: {cnt_url} from {len(urls)} has been done.')
 
 ############################################################
 
