@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
 import multiprocessing
-import re
-from random import randint
-from incapsula import IncapSession
 import requests
-import mechanicalsoup
+from random import randint
 import urllib
-import multiprocessing
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from incapsula import IncapSession
-import time
+import random
+from tabletojson import table_to_json, table_to_json_complex
+manager = multiprocessing.Manager()
+total_urls = manager.list()
 ##################################################
 ##################################################
 headers = {
@@ -19,7 +16,11 @@ headers = {
     'Content-Type': 'text/html',
 }
 
-#f = open('alibaba_result.json','a')
+with open('android_user_agents.txt') as f:
+    lines = f.readlines()
+android_user_agents = [l.strip() for l in lines]
+
+f = open('madeInChina_result.json','a')
 ##################################################
 def isListEmpty(inList):
     '''
@@ -49,6 +50,16 @@ def chunkIt(seq, num):
 
     return out
 ###################################################
+def get_android_user_agent():
+    '''
+    function_name: get_android_user_agent
+    input: none
+    output: string
+    description: return random android user agent from lists
+    '''
+
+    return android_user_agents[randint(0, len(android_user_agents) - 1)]
+###################################################
 def change_proxy():
     '''
     function_name: change_proxy
@@ -56,19 +67,26 @@ def change_proxy():
     output: none
     description: change proxy with proxyrotator api
     '''
-    url = 'http://falcon.proxyrotator.com:51337/'
 
-    params = dict(
-        apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
-    )
+    while True:
+        try:
+            url = 'http://falcon.proxyrotator.com:51337/'
 
-    print('********************************************')
-    data = ''
-    resp = requests.get(url=url, params=params)
-    data = json.loads(resp.text)
+            params = dict(
+                apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
+            )
 
-    print('Changing Proxy ... ' + data['proxy'])
-    print('********************************************')
+            data = ''
+            resp = requests.get(url=url, params=params)
+            data = json.loads(resp.text)
+
+            if('Android' not in data['randomUserAgent']):
+                break
+        except:
+            print('Error')
+            continue
+
+
     return data['proxy'], data['randomUserAgent']
 
 ###########################################################
@@ -79,79 +97,62 @@ def create_category_url():
     output: list
     description: get link of all top categories page
     '''
-    with open('madeInChinaTotalUrls.txt') as f:
+    with open('madeInChinaTotalUrls-1.txt') as f:
         urls = f.readlines()
 
     urls = [x.strip() for x in urls]
 
     return urls
 ############################################################
-def company_parse(url,data, s):
+def page_parse(urls):
     '''
-    function_name: product_parse
+    function_name: page_parse
     input: url
     output: none
-    description: crawl product page
+    description: crawl all prducts pages
     '''
-    proxy, useragent = '',''
-
     ########################################################
-    while True:
-        try:
-            #company description
-            html = s.get(str(url), proxies={'http': proxy}).content
-            soup = BeautifulSoup(html, 'html.parser')
-
-            company_name = soup.select('span.title-text')[0].text.strip()
-            company_join_year = soup.findAll('span', class_='join-year')[0].find('span').text.strip()
-            company_description = soup.find('div', class_='company-card-desc').find('div').text.strip()
-            data['company_name'] = company_name
-            data['company_join_year'] = company_join_year
-            data['company_description'] = company_description
-
-            #transaction description
-            keys = [i.text.strip() for i in soup.select('div.transaction-detail-title')]
-            values = [i.text.strip() for i in soup.select('div.transaction-detail-content')]
-            for i in range(0, len(values)):
-                if values[i] is not None and values[i] != 'Hidden':
-                    data[('company_' + str(keys[i])).replace(' ','_')] = values[i]
-
-            #company basic info
-            basicinfo = table_to_json(str(soup.select('table.company-basicInfo')[0]))
-            data['company_basic_info'] = basicinfo
-
-            #extract data from tables
-            parts = soup.select('.infoList-mod-field')
-            for p in parts:
-                title = p.find('h3').text.strip()
-                tables = p.find_all('table', recursive=True)
-                if (len(tables) == 1):
-                    table = table_to_json(str(tables[0]))
-                    if(table):
-                        data[('company_' + str(title)).replace(' ','_')] = table
-                elif (len(tables) > 1):
-                    table = table_to_json_complex(tables)
-                    if(len(table) > 0):
-                        data[('company_' + str(title)).replace(' ','_')] = table
-
-            data = None
-            ###read data to file
-            #f.write(json.dumps(data))
-            #f.write('\n')
-
-        except urllib.error.HTTPError as e:
-            if (e.code == 403):
+    for url in urls:
+        while True:
+            try:
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
-                continue
-        except:
-            proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
-            print('Error Occurred in company_parse function and try again')
-            continue
+                useragent = get_android_user_agent()
+                headers['User-Agent'] = useragent
+                html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
+                soup = BeautifulSoup(html, 'html.parser')
 
-        else:
-            break
+                data = {}
+
+                title = soup.find('title').text.split('-')[0]
+
+                data['product_title'] = title
+
+                attr_names = soup.select('label.attr-name')
+                attr_values = soup.select('div.attr-value')
+
+                for i in range(0,len(attr_names)):
+                    data[attr_names[i].text] = attr_values[i].text
+
+                extra_inforamtion = soup.find_all('table')
+                cnt = 1
+                for e in extra_inforamtion:
+                    data['extra_information_'+str(cnt)] = table_to_json(str(e))
+                    cnt = cnt + 1
+
+
+
+                data = None
+
+
+            except urllib.error.HTTPError as e:
+                if (e.code == 403):
+                    continue
+            except:
+                print('Error Occurred in page_parse function and try again')
+                continue
+
+            else:
+                break
 ############################################################
 ############################################################
 def product_parse(url):
@@ -162,34 +163,45 @@ def product_parse(url):
     description: crawl product page
     '''
     ########################################################
+    proxy, useragent = change_proxy()
+    headers['User-Agent'] = useragent
+    headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
     while True:
         try:
-           proxy, useragent = change_proxy()
-           headers['User-Agent'] = useragent
-           html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
+           headers['User-Agent'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+           html = requests.get(str(url), proxies={'http': proxy}, headers=headers, timeout=5).content
            soup = BeautifulSoup(html, 'html.parser')
 
            product_links = soup.select('h2.product-name')
+           if (len(product_links) == 0):
+               product_links = soup.select('h2.pro-name')
 
            if(len(product_links) > 0):
-                return [('https:' + p.find('a').attrs['href']) for p in product_links]
+               links = []
+               for p in product_links:
+                   if (str(p.find('a').attrs['href']).startswith('http')):
+                       links.append(str(p.find('a').attrs['href']))
+                   else:
+                       links.append('https:' + str(p.find('a').attrs['href']))
 
+               return links
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
+                print('Error 403 in porduct_parse.')
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
                 continue
         except:
+            print('Error Occurred in product_parse function and try again')
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
-            print('Error Occurred in product_parse function and try again')
+            headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
             continue
-
-
 ###########################################################
 ###########################################################
-def main_parse(urls):
+def main_parse(index, urls):
     '''
     function_name: main_parse
     input: list
@@ -197,64 +209,103 @@ def main_parse(urls):
     description: first level of crawling
     '''
     ########################################################
-    total_urls = []
+    cnt_url = 0
+    proxy, useragent = change_proxy()
+    headers['User-Agent'] = useragent
+    headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
     for url in urls:
         while True:
             try:
-                proxy, useragent = change_proxy()
-                headers['User-Agent'] = useragent
-                html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
+                headers['User-Agent'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+                html = requests.get(str(url), proxies={'http': proxy}, headers=headers, timeout=5).content
                 soup = BeautifulSoup(html, 'html.parser')
 
                 product_links = soup.select('h2.product-name')
+                if (len(product_links) == 0):
+                    product_links = soup.select('h2.pro-name')
 
                 if(len(product_links) > 0):
-                    [total_urls.append('https:' + p.find('a').attrs['href']) for p in product_links]
+                    # for p in product_links:
+                    #     if (str(p.find('a').attrs['href']).startswith('http')):
+                    #         total_urls.append(str(p.find('a').attrs['href']))
+                    #     else:
+                    #         total_urls.append('https:' + str(p.find('a').attrs['href']))
 
-                    total_pages = int(soup.select('a.page-dis')[0].text)
+                    total_pages = soup.select('a.page-dis')
 
-                    main_addres = 'https:' + '-'.join(soup.select('div.page-num')[0].find('a').attrs['href'].split('.html')[0].split('-')[:-1])
-                    for i in range(3,total_pages):
-                        lls = product_parse(main_addres + '-' + str(i) + '.html')
-                        [total_urls.append(l.attrs['href']) for l in lls]
+                    if(len(total_pages) > 0):
+                        total_pages = int(soup.select('a.page-dis')[0].text)
+                    else:
+                        total_pages = soup.select('div.page-num')
+                        if(len(total_pages) == 0):
+                            total_pages = 1
+                        else:
+                            total_pages = int(len(total_pages[0].find_all('a')))
+
+                    if(total_pages > 1):
+                        main_addres = 'https:' + '-'.join(soup.select('div.page-num')[0].find('a').attrs['href'].split('.html')[0].split('-')[:-1])
+                        for i in range(3,total_pages):
+                            total_urls.append(main_addres + '-' + str(i) + '.html')
+                            #lls = product_parse(main_addres + '-' + str(i) + '.html')
+                            #[total_urls.append(l) for l in lls]
+                            #print(f'Process {index}: {i} from {total_pages} has been done.')
+                    else:
+                        total_urls.append(url)
+
                     break
 
             except urllib.error.HTTPError as e:
-                 print(e)
                  if (e.code == 403):
+                    print('Error 403 in main_parse.')
                     proxy, useragent = change_proxy()
                     headers['User-Agent'] = useragent
+                    headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
                     continue
             except:
+                 print('Error Occurred in main_parse function and try again')
+                 print(url)
                  proxy, useragent = change_proxy()
                  headers['User-Agent'] = useragent
-                 print('Error Occurred in main_parse function and try again')
+                 headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
                  continue
 
+        cnt_url = cnt_url + 1
+        print(f'Process {index}: {cnt_url} has been done from {len(urls)}')
+
+
+    #return total_urls
 ############################################################
 ############################################################
 ############################################################
 #f = open('alibaba_result.json','a')
 
 urls = create_category_url()
-product_urls = main_parse(urls)
+#product_urls = main_parse(urls)
 
 
 
+#page_parse(product_urls)
 
-#parts = chunkIt(urls, 5)
+
+parts = chunkIt(urls, 5)
 
 processes = []
 
-#for i in [0,1,2,3,4]:
-#    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
+for i in [0,1,2,3,4]:
+    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
 
 
-#for p in processes:
-#    p.start()
+for p in processes:
+    p.start()
 
-#for p in processes:
-#    p.join()
+for p in processes:
+    p.join()
 
+f = open('all_category_pages_madeInChina-2.txt','w')
+
+for l in total_urls:
+    f.write(str(l) + '\n')
+
+f.close()
 
 #f.close()
