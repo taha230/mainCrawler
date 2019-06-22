@@ -3,6 +3,8 @@ import json
 import multiprocessing
 import re
 import requests
+import random
+from random import randint
 import urllib
 import multiprocessing
 from tabletojson import table_to_json, table_to_json_complex
@@ -44,7 +46,7 @@ def chunkIt(seq, num):
 
     return out
 ###################################################
-def change_proxy(index):
+def change_proxy():
     '''
     function_name: change_proxy
     input: none
@@ -57,13 +59,10 @@ def change_proxy(index):
         apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
     )
 
-    print(f'Process {index}: ********************************************')
     data = ''
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
 
-    print(f'Process {index}: Changing Proxy ... ' + data['proxy'])
-    print(f'Process {index}: ********************************************')
     return data['proxy'], data['randomUserAgent']
 
 ###########################################################
@@ -79,6 +78,7 @@ def create_category_url():
     urls = [li.find('a') for li in lis if li]
     urls = [url for url in urls if url is not None]
     urls = [url.attrs['href'] for url in urls if 'pid' in str(url)]
+    urls = [url.replace('http:', 'https:') for url in urls]
 
     return urls
 ############################################################
@@ -224,53 +224,48 @@ def main_parse(index, urls):
     output: none
     description: first level of crawling
     '''
-    proxy, useragent = change_proxy(index)
-    s = requests.session()
-    s.headers.update({'User-Agent': useragent})
+    proxy, useragent = change_proxy()
     ########################################################
+    cnt_url = 0
     for url in urls:
-        # Products
         for i in range(1, 101):
             while True:
                 try:
-                    html = s.get(str(url) + "?spm=a2700.galleryofferlist.pagination&page=" + str(i), proxies={'http': proxy}).content
-                    soup = BeautifulSoup(html, 'html.parser')
+                    # headers['User-Agent'] = useragent
+                    # headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
+                    # html = requests.get(str(url) + "?spm=a2700.galleryofferlist.pagination.1.22c94f8esuLjT3&page=" + str(i), headers=headers, proxies = {'http': proxy}).content
+                    #
+                    # soup = BeautifulSoup(html, 'html.parser')
+                    #
+                    # items = soup.find_all('h2', class_='title')
 
-                    items = soup.find_all('h2', class_='title')
+                    # if(len(items) == 0):
+                    #     print(f'Process {index}: cant get list of products')
+                    #     continue
+                    #
+                    # items_urls = [i.find('a').attrs['href'] for i in items]
 
-                    if(len(items) == 0):
-                        proxy, useragent = change_proxy(index)
-                        s.headers.update({'User-Agent': useragent})
-                        print(f'Process {index}: cant get list of products')
-                        continue
+                    # product_parse(index, "https:" + str(iu))
+                    ff.write(str(url) + "?page=" + str(i) + '\n')
 
-                    items_urls = [i.find('a').attrs['href'] for i in items]
 
-                    for iu in items_urls:
-                        product_parse(index, "https:" + str(iu), s)
-
-                except urllib.error.HTTPError as e:
-                    print(e)
-                    if (e.code == 403):
-                        proxy, useragent = change_proxy(index)
-                        headers['User-Agent'] = useragent
-                        continue
                 except:
-                    proxy, useragent = change_proxy(index)
-                    s.headers.update({'User-Agent': useragent})
                     print(f'Process {index}: Error Occurred in main_parse function and try again')
                     continue
 
                 else:
                     break
 
-############################################################
-############################################################
-############################################################
-f = open('alibaba_result.json','a')
+        cnt_url = cnt_url + 1
+        print(f'Process {index}: {cnt_url} from {len(urls)} has been done.')
 
+############################################################
+############################################################
+############################################################
 urls = create_category_url()
 parts = chunkIt(urls, 5)
+
+ff = open('alibaba-all-pages-links-1.txt','w')
 
 processes = []
 
@@ -285,4 +280,4 @@ for p in processes:
     p.join()
 
 
-f.close()
+ff.close()
