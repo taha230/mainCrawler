@@ -29,6 +29,8 @@ from scrapy.core.downloader.handlers.http11 import TunnelError
 from scrapy.utils.python import global_object_name
 import requests
 import mechanicalsoup
+from tabletojson import table_to_json, table_to_json_complex
+
 ##################################################
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
@@ -80,8 +82,9 @@ def create_category_url(s):
                 blockList = soupViewAll.find_all('li', class_= "q_cb")
                 for block in blockList:
                     for a in block.find_all('a'):
-                        f.write("https://dir.indiamart.com" + a['href'])
-                        f.write('\n')
+                        if ('impcat' in a['href']):
+                            f.write("https://dir.indiamart.com" + a['href'])
+                            f.write('\n')
 
             f.close()  # to erase the previous result
 
@@ -106,9 +109,6 @@ def create_category_url(s):
         else:
             break
 
-        html = s.get(url, proxies={'http': proxy}).content
-        soup = BeautifulSoup(html, 'html.parser')
-        viewAllList = soup.find_all('a')
 
 
 ##########################################################
@@ -148,8 +148,21 @@ def change_proxy():
 
     print('********************************************')
     data = ''
-    resp = requests.get(url=url, params=params)
-    data = json.loads(resp.text)
+
+    while True:
+        try:
+            resp = requests.get(url=url, params=params, timeout=5)
+            data = json.loads(resp.text)
+
+            # if('Android' in data['randomUserAgent']):
+            #     continue
+
+        except:
+            print('Exception occured in changeproxy')
+            continue
+
+        else:
+            break
 
     print('Changing Proxy ... ' + data['proxy'])
     print('********************************************')
@@ -311,9 +324,239 @@ def tokenize_buyer_or_supplier_text(result):
     # update result document in MongoDB
     # if (newResult != {}):
     # self.collection_go4w_data.update({'Key': result['Key']},{'$set': newResult})
+
+
 ########################################################################################
 
+def cleanhtmlFromTag(html , tag):
+    htmlText = str(html)
+    tablestr = re.findall("<"+tag+">(.*?)</"+tag+">",htmlText)
+    for table in tablestr:
+        htmlText = htmlText.replace(table, '')
+    return bytes(htmlText, 'utf-8')
+
+
+########################################################################################
+
+def cleanhtml(html):
+
+  htmlText = str(html)
+  htmlText = htmlText.replace('\\\\','').replace('\\\'','\'')
+  return bytes(htmlText, 'utf-8')
+
 ############################################################
+
+def productDetailCrawler(url, proxy):
+    '''
+    function_name: productDetailCrawler
+    input: response
+    output: crawlerDataset
+    description: crawl all information from productDetailCrawler
+    '''
+
+    url = 'https://www.indiamart.com/proddetail/detergent-cake-making-machine-11246772962.html'
+
+    while True:
+        try:
+
+            newResult = {}
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
+            soup = BeautifulSoup(html, 'html.parser')
+
+            productDescriptionDiv = soup.find('div', id="pdpD")
+
+            if (productDescriptionDiv):
+
+                tableList = productDescriptionDiv.find_all('table')
+
+                for table in tableList:
+                    dataTable = table_to_json(str(table))
+                    tableName = table.parent.find('h3').text
+                    newResult[tableName] = dataTable
+
+                cleanhtml = cleanhtmlFromTag(html , "table")
+                soupcleanhtml = BeautifulSoup(cleanhtml, 'html.parser')
+
+                if (soupcleanhtml.find('div', id="pdpD")):
+                    h3List = soupcleanhtml.find('div', id="pdpD").find_all('h3')
+
+                    for h3 in h3List:
+                        nextDiv = h3.findNext('div')
+                        if (nextDiv.text != "" and 'Product Image' not in str(nextDiv)):
+                            newResult[h3.text] = clean_text_(nextDiv.text)
+
+            if (soup.find('div' , class_="pdppro-img") and soup.find('div' , class_="pdppro-img").find('img') and soup.find('div' , class_="pdppro-img").find('img')['data-src']):
+                newResult['Product Image'] = soup.find('div' , class_="pdppro-img").find('img')['data-src']
+
+
+            return newResult
+
+        except urllib.error.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
+            continue
+
+        except:
+            print('Exception occured in productDetailCrawler  with url : ' + url)
+            return {}
+
+        else:
+            break
+
+########################################################################################
+
+def companyDetailCrawler(url, proxy):
+    '''
+    function_name: companyDetailCrawler
+    input: response
+    output: crawlerDataset
+    description: crawl all information from companyDetailCrawler
+    '''
+
+    url = 'https://www.indiamart.com/proddetail/detergent-cake-making-machine-11246772962.html'
+
+
+    while True:
+        try:
+            newResult = {}
+            html = requests.get(url, proxies={'http': proxy}, headers=headers, timeout=5).content
+            soup = BeautifulSoup(html, 'html.parser')
+
+            companyDescriptionDiv = soup.find('div', id="aboutUs")
+
+            if (companyDescriptionDiv):
+                divWid3List = companyDescriptionDiv.find_all('div' , class_="wid3")
+
+                for divWid3 in divWid3List:
+                    if (divWid3.find_all('span') and len(divWid3.find_all('span')) == 2):
+                        divWid3Title = divWid3.find_all('span')[0].text
+                        divWid3Value = divWid3.find_all('span')[1].text
+                        newResult[divWid3Title] = divWid3Value
+
+
+                tableList = companyDescriptionDiv.find_all('table')
+
+                for table in tableList:
+                    dataTable = table_to_json(str(table))
+                    tableName = table.parent.find('h3').text
+                    newResult[tableName] = dataTable
+
+                aboutusText = str(companyDescriptionDiv)
+                tag = 'div'
+                strRE = "<(?:div|h3|input)(.*?)</(?:div|h3|input)"
+                divSections = re.findall(strRE, str(companyDescriptionDiv))
+                for div in divSections:
+                    aboutusText = aboutusText.replace(div , '')
+
+
+                newResult['about us text'] = clean_text_(aboutusText)
+
+
+            return newResult
+
+        except urllib.error.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
+            continue
+
+        except:
+            print('Exception occured in companyDetailCrawler with url : ' + url)
+            return {}
+
+        else:
+            break
+
+
+########################################################################################
+def nestedGeneralProductCrawler(url, result, proxy):
+    '''
+    function_name: nestedURLGeneralCompanyCrawler
+    input: response
+    output: json
+    description: crawl all information from company nested url
+    '''
+
+
+    while True:
+        try:
+            nestedResult = {}
+
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
+            soup = BeautifulSoup(html, 'html.parser')
+
+
+
+            companyMode, companyResponseRate, companyContactPhone, companyContactPerson= "","","",""
+
+
+            listDiv = soup.find_all('div' , class_="sbox")
+
+            for div in listDiv:
+                if (div.find('i' , class_="pmic psimg") and div.find('span')):
+                    companyMode =  div.find('span').text
+                if (div.find('i', class_="preic psimg") and div.find('span')):
+                    companyResponseRate = div.find('span').text.replace('Response Rate' , '')
+
+            if (soup.find('span', id = "pns_no2")):
+                companyContactPhone = soup.find('span', id = "pns_no2").text.replace('Call' ,'')
+
+            if(soup.find('div', id = "supp_nm")):
+                companyContactPerson = soup.find('div', id = "supp_nm").text
+
+            nestedResult = {
+                'companyMode': companyMode,
+                'companyResponseRate': companyResponseRate,
+                'companyContactPhone': companyContactPhone,
+                'companyContactPerson': companyContactPerson,
+                'nestedURL' : url
+            }
+
+
+            # Product Detail Crawler
+            if (soup.find('div', id= "pdpD")):
+                productDetailResult = productDetailCrawler(url,proxy)
+                nestedResult = merge(nestedResult, productDetailResult)
+
+            # Company Detail Crawler
+            if (soup.find('div', id= "pdpD")):
+                companyDetailResult = companyDetailCrawler(url, proxy)
+                nestedResult = merge(nestedResult, companyDetailResult)
+
+
+            return nestedResult
+
+        except urllib.error.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print (e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in nestedURLGeneralCompanyCrawler function and try again')
+            continue
+        except:
+            print('Exception occured in nestedGeneralProductCrawler')
+            return {}
+
+        else:
+            break
+
 
 def main_parse(p, urls):
     '''
@@ -326,48 +569,149 @@ def main_parse(p, urls):
     ########################################################
     for url in urls:
         # categories
-        # taha
         proxy, useragent = change_proxy()
         s = requests.session()
-        s.headers.update({'User-Agent': useragent})
+        headers['User-Agent'] = useragent
 
-        while True:
-            try:
+        productResultSet = [] # initial set for each url
 
+        while len(productResultSet) < 1000:
+            previousProductResultLength = len(productResultSet)
 
-                # try:
-                #     response = urlrequest.urlopen(req, timeout=5)
-                # except SocketError as e:
-                #     proxy, useragent = change_proxy()
-                #     headers['User-Agent'] = useragent
-                #     continue
-                #
-                #
-                # soup = BeautifulSoup(response.read().decode('utf8'), 'html.parser')
-                html = s.get(str(url), proxies={'http': proxy}).content
-                soup = BeautifulSoup(html, 'html.parser')
+            while True:
+                try:
 
-                #u1 = urllib.urlretrieve(str(url))
-                #soup = BeautifulSoup(requests.get(str(url), proxies={'http': proxy}, headers=headers).content, 'html.parser')
-                items = soup.find_all('div', recursive=True)
-                #items_urls = [i.find('a').attrs['href'] for i in items]
-                ls = soup.select('div.image_tit')
+                    html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
+                    soup = BeautifulSoup(html, 'html.parser')
 
 
+                    productList = []
 
-            except urllib.error.HTTPError as e:
-                if (e.code == 403):
+
+                    #headers['path'] = '/impcat/next?mcatId=30693&prod_serv=P&mcatName=industrial-machinery&srt=57&end=76&ims_flag=&cityID=&prc_cnt_flg=1&fcilp=0&pr=0&pg=3&frsc=28&video='
+                    # headers['cookie'] = 'site-entry-page=https://dir.indiamart.com/impcat/metal-mesh.html; _ga=GA1.2.1901784363.1560320000; __gads=ID=7b29b5a9d6edf2a1:T=1560320007:S=ALNI_MbGAavgYJly0Pg7binsNn8IqPfDtQ; _ym_uid=1560320011246585078; _ym_d=1560320011; blformopen=1; _gaexp=GAX1.2.jKa9WrmiRQyPjEYmZtMRlw.18136.0; GeoLoc=lt%3D%7Clg%3D%7Caccu%3D%7Clg_ct%3D%7Clg_ctid%3D; _gid=GA1.2.599650647.1560781508; __sonar=16503240949616253344; G_ENABLED_IDPS=google; iploc=gcniso=DE|gcnnm=Germany|gctnm=|gctid=|gacrcy=200|gip=148.251.243.103|gstnm=null; _ym_isad=2; sessid=spv=1; xnHist=pv%3D24%7Cipv%3D0%7Cfpv%3D0%7Ccity%3D%7Ccvstate%3D%7Cpopupshown%3Dundefined%7Cinstall%3Dundefined%7Css%3Dundefined%7Cmb%3Dundefined%7Ctm%3Dundefined%7Cage%3Dundefined%7Ccount%3D%7Ctime%3D%7Cglid%3D; r=g; _ym_visorc_51115208=w; _gat_UA-10312824-1=1'
+                    # headers['referer'] = 'https://dir.indiamart.com/impcat/industrial-machinery.html'
+                    # headers['user-agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
+
+                    headers['authority'] = 'dir.indiamart.com'
+                    headers['method'] = 'GET'
+                    headers['scheme'] = 'https'
+                    headers['accept'] = '*/*'
+                    headers['accept-encoding'] = 'gzip, deflate, br'
+                    headers['accept-language'] = 'en-US,en;q=0.9,fa;q=0.8'
+                    headers['x-requested-with'] = 'XMLHttpRequest'
+
+
+                    if (soup.find('div', id= "page_variables") and soup.find('div',{"id": "page_variables"}).script):
+
+                        scriptPageVariable = soup.find('div',{"id": "page_variables"}).script
+
+                        urlFirst = url.split('/impcat')[0] + '/impcat/next?mcatId='
+                        mcatId = str(scriptPageVariable).split(',mcatID:"')[1].split("\"")[0]
+                        prod_serv = str (scriptPageVariable).split('var prod_serv = \'')[1].split("\'")[0]
+                        pageDisplay = str(scriptPageVariable).split('firstResultCount = ')[1].split(';')[0]
+                        mcatName = str(scriptPageVariable) .split('mcatName:\"')[1].split('\"')[0]
+                        firstResultCount = str(scriptPageVariable) .split('firstResultCount =')[1].split(';')[0]
+                        fcilp = str(scriptPageVariable) .split("fcilp = \'")[1].split('\'')[0]
+
+
+                        # # Page 1
+                        firstResultCount = 0
+
+                        for page in range(3):
+                            endResultCount = int(firstResultCount) + int (pageDisplay)
+                            pg =page +1
+                            urlPage = urlFirst + str(mcatId) + "&prod_serv=" + str(prod_serv) + "&mcatName=" + str(mcatName) + "&srt=" + str(int(firstResultCount)+1) + "&end=" + str(endResultCount) + "&ims_flag=&cityID=&prc_cnt_flg=1&fcilp="+ fcilp +"&pr=0&pg=" + str(pg) + "&frsc=" + str(pageDisplay) + "&video="
+                            htmlPage = requests.get(str(urlPage), proxies={'http': proxy}, headers = headers).content
+                            htmlPage = cleanhtml(htmlPage)
+                            soupPage = BeautifulSoup(htmlPage, 'html.parser')
+                            productList.extend(soupPage.find_all('li' , class_="lst_cl"))
+                            firstResultCount = firstResultCount + int(pageDisplay)
+
+
+                        for product in productList:
+
+                            companyName, companyURL, companyAddress,companyLocation,companyType, companyTrustType, companyProductName,companyRate,productURL = "","","","","","","","",""
+
+                            if (product.find('h4', class_="lcname")):
+                                companyName = product.find('h4', class_="lcname").text
+                            if (product.find('div' , class_= "r-cl") and product.find('div' , class_= "r-cl").find('a') and product.find('div' , class_= "r-cl").find('a')['href']):
+                                companyURL = product.find('div' , class_= "r-cl").find('a')['href']
+                            if (product.find('span' , class_= "to-txt")):
+                                companyAddress = product.find('span' , class_= "to-txt").text
+                            if (product.find('p', class_="sm clg")):
+                                companyLocation = product.find('p', class_="sm clg").text.replace(companyAddress, '')
+                            if (product.find('p', class_="ig mrg") and product.find('p', class_="ig mrg").find('span')):
+                                companyType = product.find('p', class_="ig mrg").find('span').text
+                            if (product.find('span' , class_="bg t_se")):
+                                companyTrustType = product.find('span' , class_="bg t_se").text
+                            if (product.find('h3', class_="lg")):
+                                companyProductName = product.find('h3', class_="lg").text
+                            if (product.find('span' , class_="prc cur")):
+                                companyRate = product.find('span' , class_="prc cur").text.replace('Get Latest Price','').replace(' ', '')
+                            if (product.find('a', class_="pnm ldf cur") and product.find('a', class_="pnm ldf cur")['href']):
+                                productURL = product.find('a', class_="pnm ldf cur")['href']
+
+
+                            result = {
+                                'companyName': companyName,
+                                'companyURL': companyURL,
+                                'companyAddress': companyAddress,
+                                'companyLocation': companyLocation,
+                                'companyType': companyType,
+                                'companyTrustType': companyTrustType,
+                                'companyProductName': companyProductName,
+                                'companyRate': companyRate,
+                                'productURL': productURL,
+                                'Key': companyURL + productURL,
+                                'searchURL': url
+                            }
+                            nestedResult = {}
+
+                            if (productURL != ""):
+                                nestedResult = nestedGeneralProductCrawler(productURL ,result, proxy)
+
+                            result = merge(result, nestedResult)
+                            productResultSet.append(json.dumps(result))
+
+                            print(json.dumps(result))
+
+
+
+                    else :
+                        proxy, useragent = change_proxy()
+                        headers['User-Agent'] = useragent
+                        continue
+
+
+
+                except urllib.error.HTTPError as e:
+                    if (e.code == 403):
+                        proxy, useragent = change_proxy()
+                        s.headers.update({'User-Agent': useragent})
+                        continue
+
+                except:
                     proxy, useragent = change_proxy()
-                    s.headers.update({'User-Agent': useragent})
+                    headers['User-Agent'] = useragent
+                    print('Error Occurred in function and try again')
                     continue
+                else:
+                    break
 
-            # except:
-            #     proxy, useragent = change_proxy()
-            #     headers['User-Agent'] = useragent
-            #     print('Error Occurred in function and try again')
-            #     continue
-            else:
+            productResultSet = list(set(productResultSet))
+
+            if (previousProductResultLength == len(productResultSet)):
                 break
+
+
+        ####################
+        for result in productResultSet:
+            f.write(result)
+            f.write('\n')
+        print( "<<<<<<<<<<<<<<<<<<<<<<<<<< category " + url + "write to file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ")
+
+
 
 ############################################################
 ############################################################
@@ -378,8 +722,37 @@ EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
 
 proxy, useragent = change_proxy()
 s = requests.session()
-s.headers.update({'User-Agent': useragent})
+headers['User-Agent'] = useragent
+
+
+f = open('indiamart_result.json','w')
+
+f.close() # to erase the previous result
+
+f = open('indiamart_result.json','a')
 
 #create_category_url(s)
-urls = read_category_url()
-main_parse(1 ,urls)
+total_urls = read_category_url()
+
+
+UrlListToRun = chunkIt(total_urls, 5)
+
+
+number_processes = 5
+parts = chunkIt(UrlListToRun[0], number_processes)
+
+processes = []
+
+for i in range(number_processes):
+    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
+
+
+for p in processes:
+    p.start()
+
+for p in processes:
+    p.join()
+
+# main_parse(1 ,total_urls)
+
+f.close()

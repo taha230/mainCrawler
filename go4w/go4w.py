@@ -1,33 +1,18 @@
 # -*- coding: utf-8 -*-
-import scrapy
-from scrapy.crawler import CrawlerProcess
 import json
 import urllib
-from urllib import request as urlrequest
-from socket import timeout
-import multiprocessing
 import re
-import requests
-from requests.adapters import HTTPAdapter
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
 from jsonmerge import merge
-from logging import exception
-from scrapy import signals
-from scrapy.downloadermiddlewares.retry import RetryMiddleware
-from twisted.internet.error import TCPTimedOutError, TimeoutError
-import logging
 from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
         ConnectionRefusedError, ConnectionDone, ConnectError, \
         ConnectionLost, TCPTimedOutError
 from twisted.web.client import ResponseFailed
 import multiprocessing
-from scrapy.exceptions import NotConfigured
-from scrapy.utils.response import response_status_message
 from scrapy.core.downloader.handlers.http11 import TunnelError
-from scrapy.utils.python import global_object_name
 import requests
+import requests.exceptions
 ##################################################
 ##################################################
 headers = {
@@ -271,7 +256,7 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html =  requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             newResult = {}
 
@@ -298,15 +283,15 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
             nestedResultOurCompany = newResult
             return nestedResultOurCompany
 
-        except urllib.error.HTTPError as e:
+        except requests.exceptions.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in OurcompanyCrawler function and try again')
             continue
 
@@ -330,7 +315,7 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             productTextList = []
@@ -373,12 +358,12 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLProductsCompanyCrawler function and try again')
             continue
         except:
@@ -401,7 +386,7 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             managementText = ""
@@ -419,12 +404,12 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
             continue
 
@@ -448,7 +433,7 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             newResult = {}
@@ -478,12 +463,12 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLFacilitiesCompanyCrawler function and try again')
             continue
         except:
@@ -506,7 +491,7 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
 
             newsRoomText = ""
@@ -523,12 +508,12 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLNewsRoomCompanyCrawler function and try again')
             continue
         except:
@@ -552,7 +537,7 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
 
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             mainTabList = []
 
@@ -634,12 +619,12 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLGeneralCompanyCrawler function and try again')
             continue
         except:
@@ -662,7 +647,7 @@ def buyerCrawler(url, s, proxy):
     ########################################################
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             buyerList = soup.find_all('div', class_ ="search-results")
 
@@ -730,17 +715,17 @@ def buyerCrawler(url, s, proxy):
 
                 f.write(json.dumps(result))
                 f.write('\n')
-                print(json.dumps(result))
+                #print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in buyerCrawler function and try again')
             continue
 
@@ -763,7 +748,7 @@ def supplierCrawler(url, s, proxy):
     ########################################################
     while True:
         try:
-            html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+            html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
             soup = BeautifulSoup(html, 'html.parser')
             supplierList = soup.find_all('div', class_="search-results")
 
@@ -832,17 +817,17 @@ def supplierCrawler(url, s, proxy):
 
                 f.write(json.dumps(result))
                 f.write('\n')
-                print(json.dumps(result))
+                #print(json.dumps(result))
 
         except urllib.error.HTTPError as e:
             if (e.code == 403):
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
-            s.headers.update({'User-Agent': useragent})
+            headers['User-Agent'] = useragent
             print('Error Occurred in supplierCrawler function and try again')
             continue
 
@@ -865,8 +850,7 @@ def main_parse(p, urls):
 
     proxy, useragent = change_proxy()
     s = requests.session()
-    s.headers.update({'User-Agent': useragent})
-
+    headers['User-Agent'] = useragent
     ########################################################
     cnt_url = 0
     for url in urls:
@@ -881,11 +865,11 @@ def main_parse(p, urls):
 
         while True:
             try:
-                html = s.get(str(url), proxies={'http': proxy}, timeout=5).content
+                html = requests.get(url, proxies={'http': proxy}, headers = headers, timeout=5).content
                 soup = BeautifulSoup(html, 'html.parser')
 
                 if (isBuyerSelected):
-                    if (soup.find('ul', class_ ="pagination").find_all('li')):
+                    if (soup.find('ul', class_ ="pagination") and soup.find('ul', class_ ="pagination").find_all('li')):
                         lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
                         if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
 
@@ -903,7 +887,7 @@ def main_parse(p, urls):
 
                 ###############################################################################
                 elif (isSupplierSelected):
-                    if (soup.find('ul', class_ ="pagination").find_all('li')):
+                    if (soup.find('ul', class_ ="pagination") and soup.find('ul', class_ ="pagination").find_all('li')):
                         lastPagelist = soup.find('ul', class_ ="pagination").find_all('li')
                         if (lastPagelist[len(lastPagelist) - 1].find('a')['href']):
                             lastPageSupplierhref = lastPagelist[len(lastPagelist) - 1].find('a')['href'].strip()
@@ -919,16 +903,19 @@ def main_parse(p, urls):
                 cnt_url = cnt_url + 1
                 print (f'process {p}: {cnt_url} from {len(urls)} has been done.')
 
-            except urllib.error.HTTPError as e:
-                print(e)
-                if (e.code == 403):
-                    proxy, useragent = change_proxy()
-                    s.headers.update({'User-Agent': useragent})
-                    continue
+            except requests.exceptions.HTTPError:
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                continue
             except EXCEPTIONS_TO_RETRY as e:
                 print (e)
                 proxy, useragent = change_proxy()
-                s.headers.update({'User-Agent': useragent})
+                headers['User-Agent'] = useragent
+                print('Error Occurred in main_parse function and try again')
+                continue
+            except:
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
                 print('Error Occurred in main_parse function and try again')
                 continue
 
@@ -951,10 +938,13 @@ f.close() # to erase the previous result
 
 f = open('go4w_result.json','a')
 
-urls = create_category_url()
+total_urls = create_category_url()
+
+UrlListToRun = chunkIt(total_urls, 5)
+
 
 number_processes = 5
-parts = chunkIt(urls, number_processes)
+parts = chunkIt(UrlListToRun[0], number_processes)
 
 processes = []
 
