@@ -14,34 +14,37 @@ def table_to_json(content, indent=None):
     description: get html of table and return json of contents in table
     '''
 
-    soup = BeautifulSoup(content, "lxml")
-    rows = soup.find_all("tr")
+    try:
+        soup = BeautifulSoup(content, "lxml")
+        rows = soup.find_all("tr")
 
-    headers = []
-    thead = soup.find_all("th")
-    if thead:
-        for i in range(0,len(thead)):
-            headers.append(thead[i].text.strip())
+        headers = []
+        thead = soup.find_all("th")
+        if thead:
+            for i in range(0,len(thead)):
+                headers.append(thead[i].text.strip())
 
 
-    if thead:
-        data = []
-        for row in rows:
-            temp = {}
-            cells = row.find_all("td")
-            if (len(cells) > 0):
-                for i in range(0,len(headers)):
-                    temp[str(headers[i]).replace(' ','_')] = str(cells[i]).text.strip()
-                data.append(temp)
-        return data
-    else:
-        data = {}
-        for row in rows:
-            cells = row.find_all("td")
-            if (len(cells) % 2 == 0):
-                for i in range(0, len(cells), 2):
-                    data[str(cells[i].text.strip()).replace(' ', '_')] = cells[i + 1].text.strip()
-        return data
+        if thead:
+            data = []
+            for row in rows:
+                temp = {}
+                cells = row.find_all("td")
+                if (len(cells) > 0):
+                    for i in range(0,len(headers)):
+                        temp[str(headers[i]).replace(' ','_')] = str(cells[i]).text.strip()
+                    data.append(temp)
+            return data
+        else:
+            data = {}
+            for row in rows:
+                cells = row.find_all("td")
+                if (len(cells) % 2 == 0):
+                    for i in range(0, len(cells), 2):
+                        data[str(cells[i].text.strip()).replace(' ', '_')] = cells[i + 1].text.strip()
+            return data
+    except:
+        return None
 
 def table_to_json_complex(tables, indent=None):
     '''
@@ -73,3 +76,29 @@ def table_to_json_complex(tables, indent=None):
 
 
     return data
+
+
+def table_to_json_horizontal(table, indent=None):
+    '''
+    function_name: table_to_json_horizontal
+    input: horizontal table tag with th and td in each tr
+    output: json
+    description: get list of html table tags and return json of contents in table
+    '''
+    soup = BeautifulSoup(str(table), "lxml")
+
+    rows = soup.find_all('tr')
+
+    data = {}
+    try:
+        for row in rows:
+            th = row.find_all('th')[0]
+            td = row.find_all('td')[0]
+
+            data[th.text.strip()] = td.text.strip()
+    except:
+        data = None
+
+
+    return data
+

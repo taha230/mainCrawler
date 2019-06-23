@@ -6,7 +6,8 @@ from random import randint
 import urllib
 from bs4 import BeautifulSoup
 import random
-from tabletojson import table_to_json, table_to_json_complex
+from jsonmerge import merge
+from tabletojson import table_to_json, table_to_json_complex, table_to_json_horizontal
 manager = multiprocessing.Manager()
 total_urls = manager.list()
 ##################################################
@@ -112,33 +113,61 @@ def page_parse(urls):
     description: crawl all prducts pages
     '''
     ########################################################
+    headers['User-Agent'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+    headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
     for url in urls:
         while True:
             try:
-                proxy, useragent = change_proxy()
-                useragent = get_android_user_agent()
-                headers['User-Agent'] = useragent
-                html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
+                if 'proxy' in locals():
+                    html = requests.get(str(url), headers=headers, proxies={'http': proxy}).content
+                else:
+                    html = requests.get(str(url), headers=headers).content
+
                 soup = BeautifulSoup(html, 'html.parser')
 
                 data = {}
 
-                title = soup.find('title').text.split('-')[0]
+                try:
+                    title = soup.select('h1.J-baseInfo-name')[0].text.strip()
+                    data['product_title'] = title
+                except:
+                    title = None
 
-                data['product_title'] = title
 
-                attr_names = soup.select('label.attr-name')
-                attr_values = soup.select('div.attr-value')
+                tables = soup.find_all('table')
 
-                for i in range(0,len(attr_names)):
-                    data[attr_names[i].text] = attr_values[i].text
+                for t in tables:
+                    table_json = table_to_json_horizontal(str(t))
+                    if (bool(table_json)):
+                        data = merge(data, table_json)
+                        continue
 
-                extra_inforamtion = soup.find_all('table')
-                cnt = 1
-                for e in extra_inforamtion:
-                    data['extra_information_'+str(cnt)] = table_to_json(str(e))
-                    cnt = cnt + 1
+                    table_json = table_to_json(str(t))
+                    if (bool(table_json)):
+                        data = merge(data, table_json)
 
+
+                items = soup.select('div.bac-item-label')
+                values = soup.select('div.bac-item-value')
+                temp = {}
+                for i in range(0,len(items)):
+                    temp[items[i].text.strip()] = values[i].text.strip()
+
+                data = merge(data, temp)
+
+
+                try:
+                    company = soup.select('div.title-txt')[0].find('a').text.strip()
+                    data['company_name'] = company
+                except:
+                    pass
+
+
+                try:
+                    contact_name = soup.select('div.sr-side-contSupplier-name')[0].text
+                    data['contact_name'] = contact_name
+                except:
+                    data['contact_name'] = 'None'
 
 
                 data = None
@@ -279,33 +308,32 @@ def main_parse(index, urls):
 ############################################################
 #f = open('alibaba_result.json','a')
 
-urls = create_category_url()
+#urls = create_category_url()
 #product_urls = main_parse(urls)
 
 
 
-#page_parse(product_urls)
+page_parse(['https://cnpinnxun.en.made-in-china.com/product/WSLJfmNVVPrG/China-Three-Phase-Asynchronous-AC-Induction-Electric-Gear-Reducer-Fan-Blower-Vacuum-Air-Compressor-Water-Pump-Universal-Industry-Machine-Motor.html'])
 
 
-parts = chunkIt(urls, 5)
+# parts = chunkIt(urls, 5)
+#
+# processes = []
+#
+# for i in [0,1,2,3,4]:
+#     processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
+#
+#
+# for p in processes:
+#     p.start()
+#
+# for p in processes:
+#     p.join()
+#
+# f = open('all_category_pages_madeInChina-2.txt','w')
+#
+# for l in total_urls:
+#     f.write(str(l) + '\n')
+#
+# f.close()
 
-processes = []
-
-for i in [0,1,2,3,4]:
-    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
-
-
-for p in processes:
-    p.start()
-
-for p in processes:
-    p.join()
-
-f = open('all_category_pages_madeInChina-2.txt','w')
-
-for l in total_urls:
-    f.write(str(l) + '\n')
-
-f.close()
-
-#f.close()
