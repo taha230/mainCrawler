@@ -16,20 +16,6 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
     'Content-Type': 'text/html',
 }
-
-with open('android_user_agents.txt') as f:
-    lines = f.readlines()
-android_user_agents = [l.strip() for l in lines]
-###################################################
-def get_android_user_agent():
-    '''
-    function_name: get_android_user_agent
-    input: none
-    output: string
-    description: return random android user agent from lists
-    '''
-
-    return android_user_agents[randint(0, len(android_user_agents) - 1)]
 ###################################################
 def change_proxy():
     '''
@@ -44,22 +30,24 @@ def change_proxy():
             url = 'http://falcon.proxyrotator.com:51337/'
 
             params = dict(
-                apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
+                apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV',
+                connectionType='Datacenter'
             )
 
             data = ''
             resp = requests.get(url=url, params=params)
             data = json.loads(resp.text)
 
+            if ('Android' not in data['randomUserAgent']):
+                break
         except:
-            print('Error in Change Proxy')
+            print('Error in chaning proxy...')
             continue
 
     return data['proxy'], data['randomUserAgent']
-
 #################################################################################################################
 @app.task
-def page_parse(urls):
+def page_parse(url):
     '''
     function_name: page_parse
     input: url
@@ -69,67 +57,68 @@ def page_parse(urls):
     ########################################################
     headers['User-Agent'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
     headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
-    for url in urls:
-        while True:
-            try:
-                if 'proxy' in locals():
-                    html = requests.get(str(url), headers=headers, proxies={'http': proxy}).content
-                else:
-                    html = requests.get(str(url), headers=headers).content
-
-                soup = BeautifulSoup(html, 'html.parser')
-
-                data = {}
-
-                try:
-                    title = soup.select('h1.J-baseInfo-name')[0].text.strip()
-                    data['product_title'] = title
-                except:
-                    title = None
-
-                tables = soup.find_all('table')
-
-                for t in tables:
-                    table_json = table_to_json_horizontal(str(t))
-                    if (bool(table_json)):
-                        data = merge(data, table_json)
-                        continue
-
-                    table_json = table_to_json(str(t))
-                    if (bool(table_json)):
-                        data = merge(data, table_json)
-
-                items = soup.select('div.bac-item-label')
-                values = soup.select('div.bac-item-value')
-                temp = {}
-                for i in range(0, len(items)):
-                    temp[items[i].text.strip()] = values[i].text.strip()
-
-                data = merge(data, temp)
-
-                try:
-                    company = soup.select('div.title-txt')[0].find('a').text.strip()
-                    data['company_name'] = company
-                except:
-                    pass
-
-                try:
-                    contact_name = soup.select('div.sr-side-contSupplier-name')[0].text
-                    data['contact_name'] = contact_name
-                except:
-                    data['contact_name'] = 'None'
-
-
-
-                return data
-
-            except urllib.error.HTTPError as e:
-                if (e.code == 403):
-                    continue
-            except:
-                print('Error Occurred in page_parse function and try again')
-                continue
-
+    while True:
+        try:
+            if 'proxy' in locals():
+                html = requests.get(str(url), headers=headers, proxies={'http': proxy}).content
             else:
-                break
-#################################################################################################################
+                html = requests.get(str(url), headers=headers).content
+
+            soup = BeautifulSoup(html, 'html.parser')
+
+            data = {}
+
+            try:
+                title = soup.select('h1.J-baseInfo-name')
+                if len(title) > 0:
+                    data['product_title'] = title[0].text.strip()
+                else:
+                    title = soup.select('div.pro-name')[0].find('h1').text.strip()
+                    data['product_title'] = title
+            except:
+                data['title'] = 'None'
+
+            tables = soup.find_all('table')
+
+            for t in tables:
+                table_json = table_to_json_horizontal(str(t))
+                if (bool(table_json)):
+                    data = merge(data, table_json)
+                    continue
+
+                table_json = table_to_json(str(t))
+                if (bool(table_json)):
+                    data = merge(data, table_json)
+
+            items = soup.select('div.bac-item-label')
+            values = soup.select('div.bac-item-value')
+            temp = {}
+            for i in range(0, len(items)):
+                temp[items[i].text.strip()] = values[i].text.strip()
+
+            data = merge(data, temp)
+
+            try:
+                company = soup.select('div.title-txt')[0].find('a').text.strip()
+                data['company_name'] = company
+            except:
+                pass
+
+            try:
+                contact_name = soup.select('div.sr-side-contSupplier-name')[0].text
+                data['contact_name'] = contact_name
+            except:
+                data['contact_name'] = 'None'
+
+            data = None
+
+
+        except Exception as e:
+            print(e)
+            proxy, useragent = change_proxy()
+            print('Error Occurred in page_parse function and try again')
+            continue
+
+        else:
+            break
+

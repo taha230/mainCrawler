@@ -32,8 +32,10 @@ def table_to_json(content, indent=None):
                 cells = row.find_all("td")
                 if (len(cells) > 0):
                     for i in range(0,len(headers)):
-                        temp[str(headers[i]).replace(' ','_')] = str(cells[i]).text.strip()
-                    data.append(temp)
+                        if(len(str(headers[i]).replace(' ','_')) > 0):
+                            temp[str(headers[i]).replace(' ','_')] = str(cells[i]).text.strip()
+                    if(bool(temp)):
+                        data.append(temp)
             return data
         else:
             data = {}
@@ -41,7 +43,8 @@ def table_to_json(content, indent=None):
                 cells = row.find_all("td")
                 if (len(cells) % 2 == 0):
                     for i in range(0, len(cells), 2):
-                        data[str(cells[i].text.strip()).replace(' ', '_')] = cells[i + 1].text.strip()
+                        if (len(str(cells[i].text.strip()).replace(' ', '_')) > 0):
+                            data[str(cells[i].text.strip()).replace(' ', '_')] = cells[i + 1].text.strip()
             return data
     except:
         return None
@@ -71,7 +74,8 @@ def table_to_json_complex(tables, indent=None):
         temp = {}
         cells = row.find_all("td")
         for i in range(0,len(headers)):
-           temp[str(headers[i]).replace(' ','_')] = cells[i].text.strip()
+           if(len(str(headers[i]).replace(' ','_')) > 0):
+               temp[str(headers[i]).replace(' ','_')] = cells[i].text.strip()
         data.append(temp)
 
 
@@ -95,7 +99,8 @@ def table_to_json_horizontal(table, indent=None):
             th = row.find_all('th')[0]
             td = row.find_all('td')[0]
 
-            data[th.text.strip()] = td.text.strip()
+            if(len(str(th.text.strip())) > 0):
+                data[th.text.strip()] = td.text.strip()
     except:
         data = None
 

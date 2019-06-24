@@ -1,0 +1,1 @@
+{"status": "FAILURE", "result": {"exc_type": "NotRegistered", "exc_message": ["run_distributed.tasks.product_parse"], "exc_module": "celery.exceptions"}, "traceback": null, "children": [], "task_id": "89c9a314-5e63-4ce7-b22e-525d50645074", "date_done": "2019-06-23T12:53:17.576082"}
