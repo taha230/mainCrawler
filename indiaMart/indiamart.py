@@ -30,6 +30,8 @@ from scrapy.utils.python import global_object_name
 import requests
 import mechanicalsoup
 from tabletojson import table_to_json, table_to_json_complex
+import random
+
 
 ##################################################
 headers = {
@@ -143,7 +145,9 @@ def change_proxy():
     url = 'http://falcon.proxyrotator.com:51337/'
 
     params = dict(
-        apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
+        apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV',
+        #referer="true",
+        connectionType="Datacenter"
     )
 
     print('********************************************')
@@ -566,150 +570,197 @@ def main_parse(p, urls):
     description: first level of crawling
     '''
 
+    #proxy, useragent = change_proxy()
+
+    # headers['path'] = '/impcat/next?mcatId=30693&prod_serv=P&mcatName=industrial-machinery&srt=57&end=76&ims_flag=&cityID=&prc_cnt_flg=1&fcilp=0&pr=0&pg=3&frsc=28&video='
+    # headers['cookie'] = 'site-entry-page=https://dir.indiamart.com/impcat/metal-mesh.html; _ga=GA1.2.1901784363.1560320000; __gads=ID=7b29b5a9d6edf2a1:T=1560320007:S=ALNI_MbGAavgYJly0Pg7binsNn8IqPfDtQ; _ym_uid=1560320011246585078; _ym_d=1560320011; blformopen=1; _gaexp=GAX1.2.jKa9WrmiRQyPjEYmZtMRlw.18136.0; GeoLoc=lt%3D%7Clg%3D%7Caccu%3D%7Clg_ct%3D%7Clg_ctid%3D; _gid=GA1.2.599650647.1560781508; __sonar=16503240949616253344; G_ENABLED_IDPS=google; iploc=gcniso=DE|gcnnm=Germany|gctnm=|gctid=|gacrcy=200|gip=148.251.243.103|gstnm=null; _ym_isad=2; sessid=spv=1; xnHist=pv%3D24%7Cipv%3D0%7Cfpv%3D0%7Ccity%3D%7Ccvstate%3D%7Cpopupshown%3Dundefined%7Cinstall%3Dundefined%7Css%3Dundefined%7Cmb%3Dundefined%7Ctm%3Dundefined%7Cage%3Dundefined%7Ccount%3D%7Ctime%3D%7Cglid%3D; r=g; _ym_visorc_51115208=w; _gat_UA-10312824-1=1'
+    # headers['referer'] = 'https://dir.indiamart.com/impcat/industrial-machinery.html'
+    # headers['user-agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
+
+    headers['authority'] = 'dir.indiamart.com'
+    headers['method'] = 'GET'
+    headers['scheme'] = 'https'
+    headers['accept'] = '*/*'
+    headers['accept-encoding'] = 'gzip, deflate, br'
+    headers['accept-language'] = 'en-US,en;q=0.9,fa;q=0.8'
+    headers['x-requested-with'] = 'XMLHttpRequest'
+    #headers['User-Agent'] = useragent
+    #headers['User-Agent'] = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+    headers['X-Forwarded-For'] = '.'.join([str(random.randint(0, 255)) for i in range(4)])
+
     ########################################################
     for url in urls:
         # categories
-        proxy, useragent = change_proxy()
-        s = requests.session()
-        headers['User-Agent'] = useragent
+        #proxy, useragent = change_proxy()
+        #s = requests.session()
+        #headers['User-Agent'] = useragent
 
         productResultSet = [] # initial set for each url
 
-        while len(productResultSet) < 1000:
-            previousProductResultLength = len(productResultSet)
+        # while len(productResultSet) < 1000:
+        #     previousProductResultLength = len(productResultSet)
 
-            while True:
-                try:
+        while True:
+            try:
 
-                    html = requests.get(str(url), proxies={'http': proxy}, headers=headers).content
-                    soup = BeautifulSoup(html, 'html.parser')
-
-
-                    productList = []
+                #url = "https://dir.indiamart.com/impcat/spm-machine.html"
+                html = requests.get(str(url), proxies = {'http': proxy}, headers=headers).content
+                soup = BeautifulSoup(html, 'html.parser')
 
 
-                    #headers['path'] = '/impcat/next?mcatId=30693&prod_serv=P&mcatName=industrial-machinery&srt=57&end=76&ims_flag=&cityID=&prc_cnt_flg=1&fcilp=0&pr=0&pg=3&frsc=28&video='
-                    # headers['cookie'] = 'site-entry-page=https://dir.indiamart.com/impcat/metal-mesh.html; _ga=GA1.2.1901784363.1560320000; __gads=ID=7b29b5a9d6edf2a1:T=1560320007:S=ALNI_MbGAavgYJly0Pg7binsNn8IqPfDtQ; _ym_uid=1560320011246585078; _ym_d=1560320011; blformopen=1; _gaexp=GAX1.2.jKa9WrmiRQyPjEYmZtMRlw.18136.0; GeoLoc=lt%3D%7Clg%3D%7Caccu%3D%7Clg_ct%3D%7Clg_ctid%3D; _gid=GA1.2.599650647.1560781508; __sonar=16503240949616253344; G_ENABLED_IDPS=google; iploc=gcniso=DE|gcnnm=Germany|gctnm=|gctid=|gacrcy=200|gip=148.251.243.103|gstnm=null; _ym_isad=2; sessid=spv=1; xnHist=pv%3D24%7Cipv%3D0%7Cfpv%3D0%7Ccity%3D%7Ccvstate%3D%7Cpopupshown%3Dundefined%7Cinstall%3Dundefined%7Css%3Dundefined%7Cmb%3Dundefined%7Ctm%3Dundefined%7Cage%3Dundefined%7Ccount%3D%7Ctime%3D%7Cglid%3D; r=g; _ym_visorc_51115208=w; _gat_UA-10312824-1=1'
-                    # headers['referer'] = 'https://dir.indiamart.com/impcat/industrial-machinery.html'
-                    # headers['user-agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
-
-                    headers['authority'] = 'dir.indiamart.com'
-                    headers['method'] = 'GET'
-                    headers['scheme'] = 'https'
-                    headers['accept'] = '*/*'
-                    headers['accept-encoding'] = 'gzip, deflate, br'
-                    headers['accept-language'] = 'en-US,en;q=0.9,fa;q=0.8'
-                    headers['x-requested-with'] = 'XMLHttpRequest'
+                productList = []
 
 
-                    if (soup.find('div', id= "page_variables") and soup.find('div',{"id": "page_variables"}).script):
 
-                        scriptPageVariable = soup.find('div',{"id": "page_variables"}).script
+                if (soup.find('div', id= "page_variables") and soup.find('div',{"id": "page_variables"}).script):
 
-                        urlFirst = url.split('/impcat')[0] + '/impcat/next?mcatId='
-                        mcatId = str(scriptPageVariable).split(',mcatID:"')[1].split("\"")[0]
-                        prod_serv = str (scriptPageVariable).split('var prod_serv = \'')[1].split("\'")[0]
-                        pageDisplay = str(scriptPageVariable).split('firstResultCount = ')[1].split(';')[0]
-                        mcatName = str(scriptPageVariable) .split('mcatName:\"')[1].split('\"')[0]
-                        firstResultCount = str(scriptPageVariable) .split('firstResultCount =')[1].split(';')[0]
-                        fcilp = str(scriptPageVariable) .split("fcilp = \'")[1].split('\'')[0]
+                    scriptPageVariable = soup.find('div',{"id": "page_variables"}).script
+
+                    urlFirst = url.split('/impcat')[0] + '/impcat/next?mcatId='
+                    mcatId = str(scriptPageVariable).split(',mcatID:"')[1].split("\"")[0]
+                    prod_serv = str (scriptPageVariable).split('var prod_serv = \'')[1].split("\'")[0]
+                    pageDisplay = str(scriptPageVariable).split('firstResultCount = ')[1].split(';')[0]
+                    mcatName = str(scriptPageVariable) .split('mcatName:\"')[1].split('\"')[0]
+                    firstResultCount = str(scriptPageVariable) .split('firstResultCount =')[1].split(';')[0]
+                    fcilp = str(scriptPageVariable) .split("fcilp = \'")[1].split('\'')[0]
 
 
-                        # # Page 1
-                        firstResultCount = 0
+                    # # Page 1
+                    firstResultCount = 0
+                    page =0
 
-                        for page in range(3):
-                            endResultCount = int(firstResultCount) + int (pageDisplay)
-                            pg =page +1
-                            urlPage = urlFirst + str(mcatId) + "&prod_serv=" + str(prod_serv) + "&mcatName=" + str(mcatName) + "&srt=" + str(int(firstResultCount)+1) + "&end=" + str(endResultCount) + "&ims_flag=&cityID=&prc_cnt_flg=1&fcilp="+ fcilp +"&pr=0&pg=" + str(pg) + "&frsc=" + str(pageDisplay) + "&video="
-                            htmlPage = requests.get(str(urlPage), proxies={'http': proxy}, headers = headers).content
-                            htmlPage = cleanhtml(htmlPage)
-                            soupPage = BeautifulSoup(htmlPage, 'html.parser')
+                    while True:
+
+                        soupPage = None
+
+                        while True:
+                            try:
+                                endResultCount = int(firstResultCount) + int (pageDisplay)
+                                pg =page +1
+                                urlPage = urlFirst + str(mcatId) + "&prod_serv=" + str(prod_serv) + "&mcatName=" + str(mcatName) + "&srt=" + str(int(firstResultCount)+1) + "&end=" + str(endResultCount) + "&ims_flag=&cityID=&prc_cnt_flg=1&fcilp="+ fcilp +"&pr=0&pg=" + str(pg) + "&frsc=" + str(pageDisplay) + "&video="
+                                htmlPage = requests.get(str(urlPage), proxies={'http': proxy}, headers = headers, timeout=5).content
+                                htmlPage = cleanhtml(htmlPage)
+                                soupPage = BeautifulSoup(htmlPage, 'html.parser')
+
+                                if ('Error 403 (Forbidden)' in str(soupPage)):
+                                    print('Error 403 (Forbidden) occured and retry')
+                                    continue
+
+                            except urllib.error.HTTPError as e:
+                                #if (e.code == 403):
+                                proxy, useragent = change_proxy()
+                                s.headers.update({'User-Agent': useragent})
+                                continue
+
+                            except EXCEPTIONS_TO_RETRY as e:
+                                print(e)
+                                continue
+                                # proxy, useragent = change_proxy()
+                                # headers['User-Agent'] = useragent
+                                # print('Error Occurred in function and try again')
+                                # continue
+                            except exception as e:
+                                print(e)
+                                continue
+
+                            else:
+                                break
+
+
+                        if (soupPage.find_all('li' , class_="lst_cl")):
                             productList.extend(soupPage.find_all('li' , class_="lst_cl"))
-                            firstResultCount = firstResultCount + int(pageDisplay)
+                        else:
+                            break
+
+                        firstResultCount = firstResultCount + int(pageDisplay)
+                        print(page)
+                        page = page + 1
 
 
-                        for product in productList:
 
-                            companyName, companyURL, companyAddress,companyLocation,companyType, companyTrustType, companyProductName,companyRate,productURL = "","","","","","","","",""
+                    for product in productList:
 
-                            if (product.find('h4', class_="lcname")):
-                                companyName = product.find('h4', class_="lcname").text
-                            if (product.find('div' , class_= "r-cl") and product.find('div' , class_= "r-cl").find('a') and product.find('div' , class_= "r-cl").find('a')['href']):
-                                companyURL = product.find('div' , class_= "r-cl").find('a')['href']
-                            if (product.find('span' , class_= "to-txt")):
-                                companyAddress = product.find('span' , class_= "to-txt").text
-                            if (product.find('p', class_="sm clg")):
-                                companyLocation = product.find('p', class_="sm clg").text.replace(companyAddress, '')
-                            if (product.find('p', class_="ig mrg") and product.find('p', class_="ig mrg").find('span')):
-                                companyType = product.find('p', class_="ig mrg").find('span').text
-                            if (product.find('span' , class_="bg t_se")):
-                                companyTrustType = product.find('span' , class_="bg t_se").text
-                            if (product.find('h3', class_="lg")):
-                                companyProductName = product.find('h3', class_="lg").text
-                            if (product.find('span' , class_="prc cur")):
-                                companyRate = product.find('span' , class_="prc cur").text.replace('Get Latest Price','').replace(' ', '')
-                            if (product.find('a', class_="pnm ldf cur") and product.find('a', class_="pnm ldf cur")['href']):
-                                productURL = product.find('a', class_="pnm ldf cur")['href']
+                        companyName, companyURL, companyAddress,companyLocation,companyType, companyTrustType, companyProductName,companyRate,productURL = "","","","","","","","",""
+
+                        if (product.find('h4', class_="lcname")):
+                            companyName = product.find('h4', class_="lcname").text
+                        if (product.find('div' , class_= "r-cl") and product.find('div' , class_= "r-cl").find('a') and product.find('div' , class_= "r-cl").find('a')['href']):
+                            companyURL = product.find('div' , class_= "r-cl").find('a')['href']
+                        if (product.find('span' , class_= "to-txt")):
+                            companyAddress = product.find('span' , class_= "to-txt").text
+                        if (product.find('p', class_="sm clg")):
+                            companyLocation = product.find('p', class_="sm clg").text.replace(companyAddress, '')
+                        if (product.find('p', class_="ig mrg") and product.find('p', class_="ig mrg").find('span')):
+                            companyType = product.find('p', class_="ig mrg").find('span').text
+                        if (product.find('span' , class_="bg t_se")):
+                            companyTrustType = product.find('span' , class_="bg t_se").text
+                        if (product.find('h3', class_="lg")):
+                            companyProductName = product.find('h3', class_="lg").text
+                        if (product.find('span' , class_="prc cur")):
+                            companyRate = product.find('span' , class_="prc cur").text.replace('Get Latest Price','').replace(' ', '')
+                        if (product.find('a', class_="pnm ldf cur") and product.find('a', class_="pnm ldf cur")['href']):
+                            productURL = product.find('a', class_="pnm ldf cur")['href']
 
 
-                            result = {
-                                'companyName': companyName,
-                                'companyURL': companyURL,
-                                'companyAddress': companyAddress,
-                                'companyLocation': companyLocation,
-                                'companyType': companyType,
-                                'companyTrustType': companyTrustType,
-                                'companyProductName': companyProductName,
-                                'companyRate': companyRate,
-                                'productURL': productURL,
-                                'Key': companyURL + productURL,
-                                'searchURL': url
-                            }
-                            nestedResult = {}
+                        result = {
+                            'companyName': companyName,
+                            'companyURL': companyURL,
+                            'companyAddress': companyAddress,
+                            'companyLocation': companyLocation,
+                            'companyType': companyType,
+                            'companyTrustType': companyTrustType,
+                            'companyProductName': companyProductName,
+                            'companyRate': companyRate,
+                            'productURL': productURL,
+                            'Key': companyURL + productURL,
+                            'searchURL': url
+                        }
+                        nestedResult = {}
 
-                            if (productURL != ""):
-                                nestedResult = nestedGeneralProductCrawler(productURL ,result, proxy)
+                        if (productURL != ""):
+                            nestedResult = nestedGeneralProductCrawler(productURL ,result, proxy)
 
                             result = merge(result, nestedResult)
-                            productResultSet.append(json.dumps(result))
+                            #productResultSet.append(json.dumps(result))
+                            f.write(json.dumps(result))
+                            f.write('\n')
 
                             print(json.dumps(result))
 
 
 
-                    else :
-                        proxy, useragent = change_proxy()
-                        headers['User-Agent'] = useragent
-                        continue
-
-
-
-                except urllib.error.HTTPError as e:
-                    if (e.code == 403):
-                        proxy, useragent = change_proxy()
-                        s.headers.update({'User-Agent': useragent})
-                        continue
-
-                except:
+                else :
                     proxy, useragent = change_proxy()
                     headers['User-Agent'] = useragent
-                    print('Error Occurred in function and try again')
                     continue
-                else:
-                    break
 
-            productResultSet = list(set(productResultSet))
 
-            if (previousProductResultLength == len(productResultSet)):
+
+            except urllib.error.HTTPError as e:
+                if (e.code == 403):
+                    proxy, useragent = change_proxy()
+                    s.headers.update({'User-Agent': useragent})
+                    continue
+
+            except:
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                print('Error Occurred in function and try again')
+                continue
+            else:
                 break
+
+            # productResultSet = list(set(productResultSet))
+            #
+            # if (previousProductResultLength == len(productResultSet)):
+            #     break
 
 
         ####################
-        for result in productResultSet:
-            f.write(result)
-            f.write('\n')
-        print( "<<<<<<<<<<<<<<<<<<<<<<<<<< category " + url + "write to file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ")
+        # for result in productResultSet:
+        #     f.write(result)
+        #     f.write('\n')
+        # print( "<<<<<<<<<<<<<<<<<<<<<<<<<< category " + url + "write to file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ")
 
 
 
@@ -720,9 +771,9 @@ EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
                            ConnectionLost, TCPTimedOutError, ResponseFailed,
                            IOError, TunnelError)
 
-proxy, useragent = change_proxy()
-s = requests.session()
-headers['User-Agent'] = useragent
+#proxy, useragent = change_proxy()
+#s = requests.session()
+#headers['User-Agent'] = useragent
 
 
 f = open('indiamart_result.json','w')
@@ -735,24 +786,24 @@ f = open('indiamart_result.json','a')
 total_urls = read_category_url()
 
 
-UrlListToRun = chunkIt(total_urls, 5)
+# UrlListToRun = chunkIt(total_urls, 5)
+#
+#
+# number_processes = 5
+# parts = chunkIt(UrlListToRun[0], number_processes)
+#
+# processes = []
+#
+# for i in range(number_processes):
+#     processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
+#
+#
+# for p in processes:
+#     p.start()
+#
+# for p in processes:
+#     p.join()
 
-
-number_processes = 5
-parts = chunkIt(UrlListToRun[0], number_processes)
-
-processes = []
-
-for i in range(number_processes):
-    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
-
-
-for p in processes:
-    p.start()
-
-for p in processes:
-    p.join()
-
-# main_parse(1 ,total_urls)
+main_parse(1 ,total_urls)
 
 f.close()
