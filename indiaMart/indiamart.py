@@ -31,6 +31,7 @@ import requests
 import mechanicalsoup
 from tabletojson import table_to_json, table_to_json_complex
 import random
+import time
 
 
 ##################################################
@@ -157,20 +158,20 @@ def change_proxy():
         try:
             resp = requests.get(url=url, params=params, timeout=5)
             data = json.loads(resp.text)
+            print('Changing Proxy ... ' + data['proxy'])
+            print('********************************************')
+            return data['proxy'], data['randomUserAgent']
 
             # if('Android' in data['randomUserAgent']):
             #     continue
 
         except:
             print('Exception occured in changeproxy')
+            time.sleep(60)
             continue
 
-        else:
-            break
 
-    print('Changing Proxy ... ' + data['proxy'])
-    print('********************************************')
-    return data['proxy'], data['randomUserAgent']
+
 
 ##################################################
 def chunkIt(seq, num):
@@ -237,8 +238,9 @@ def clean_text_(text):
     text_5 = text_4.replace('[]', '').strip()  # remove  [] for empty list
     text_6 = text_5.replace('\']', '').replace('[\'', '')  # remove [' and '] for start and end list
     text_7 = text_6.replace('\\r', '')  # remove \r from text
+    text_8 = text_7.replace('\r', '')  # remove \r from text
 
-    return text_7
+    return text_8
 
 ###################################################
 def clean_backslashN_array(inputArray):
@@ -375,7 +377,7 @@ def productDetailCrawler(url, proxy):
 
                 for table in tableList:
                     dataTable = table_to_json(str(table))
-                    tableName = table.parent.find('h3').text
+                    tableName = table.parent.find('h3').text.strip()
                     newResult[tableName] = dataTable
 
                 cleanhtml = cleanhtmlFromTag(html , "table")
@@ -404,7 +406,7 @@ def productDetailCrawler(url, proxy):
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
-            print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
+            print('Error Occurred in productDetailCrawler function and try again')
             continue
 
         except:
@@ -440,8 +442,8 @@ def companyDetailCrawler(url, proxy):
 
                 for divWid3 in divWid3List:
                     if (divWid3.find_all('span') and len(divWid3.find_all('span')) == 2):
-                        divWid3Title = divWid3.find_all('span')[0].text
-                        divWid3Value = divWid3.find_all('span')[1].text
+                        divWid3Title = divWid3.find_all('span')[0].text.strip()
+                        divWid3Value = divWid3.find_all('span')[1].text.strip()
                         newResult[divWid3Title] = divWid3Value
 
 
@@ -449,7 +451,7 @@ def companyDetailCrawler(url, proxy):
 
                 for table in tableList:
                     dataTable = table_to_json(str(table))
-                    tableName = table.parent.find('h3').text
+                    tableName = table.parent.find('h3').text.strip()
                     newResult[tableName] = dataTable
 
                 aboutusText = str(companyDescriptionDiv)
@@ -474,7 +476,7 @@ def companyDetailCrawler(url, proxy):
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
-            print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
+            print('Error Occurred in companyDetailCrawler function and try again')
             continue
 
         except:
@@ -511,15 +513,15 @@ def nestedGeneralProductCrawler(url, result, proxy):
 
             for div in listDiv:
                 if (div.find('i' , class_="pmic psimg") and div.find('span')):
-                    companyMode =  div.find('span').text
+                    companyMode =  div.find('span').text.strip()
                 if (div.find('i', class_="preic psimg") and div.find('span')):
-                    companyResponseRate = div.find('span').text.replace('Response Rate' , '')
+                    companyResponseRate = div.find('span').text.replace('Response Rate' , '').strip()
 
             if (soup.find('span', id = "pns_no2")):
-                companyContactPhone = soup.find('span', id = "pns_no2").text.replace('Call' ,'')
+                companyContactPhone = soup.find('span', id = "pns_no2").text.replace('Call' ,'').strip()
 
             if(soup.find('div', id = "supp_nm")):
-                companyContactPerson = soup.find('div', id = "supp_nm").text
+                companyContactPerson = soup.find('div', id = "supp_nm").text.strip()
 
             nestedResult = {
                 'companyMode': companyMode,
@@ -552,10 +554,10 @@ def nestedGeneralProductCrawler(url, result, proxy):
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
-            print('Error Occurred in nestedURLGeneralCompanyCrawler function and try again')
+            print('Error Occurred in nestedGeneralProductCrawler function and try again')
             continue
         except:
-            print('Exception occured in nestedGeneralProductCrawler')
+            print('Exception occured in nestedGeneralProductCrawler in url:' + url)
             return {}
 
         else:
@@ -570,7 +572,7 @@ def main_parse(p, urls):
     description: first level of crawling
     '''
 
-    #proxy, useragent = change_proxy()
+    proxy, useragent = change_proxy()
 
     # headers['path'] = '/impcat/next?mcatId=30693&prod_serv=P&mcatName=industrial-machinery&srt=57&end=76&ims_flag=&cityID=&prc_cnt_flg=1&fcilp=0&pr=0&pg=3&frsc=28&video='
     # headers['cookie'] = 'site-entry-page=https://dir.indiamart.com/impcat/metal-mesh.html; _ga=GA1.2.1901784363.1560320000; __gads=ID=7b29b5a9d6edf2a1:T=1560320007:S=ALNI_MbGAavgYJly0Pg7binsNn8IqPfDtQ; _ym_uid=1560320011246585078; _ym_d=1560320011; blformopen=1; _gaexp=GAX1.2.jKa9WrmiRQyPjEYmZtMRlw.18136.0; GeoLoc=lt%3D%7Clg%3D%7Caccu%3D%7Clg_ct%3D%7Clg_ctid%3D; _gid=GA1.2.599650647.1560781508; __sonar=16503240949616253344; G_ENABLED_IDPS=google; iploc=gcniso=DE|gcnnm=Germany|gctnm=|gctid=|gacrcy=200|gip=148.251.243.103|gstnm=null; _ym_isad=2; sessid=spv=1; xnHist=pv%3D24%7Cipv%3D0%7Cfpv%3D0%7Ccity%3D%7Ccvstate%3D%7Cpopupshown%3Dundefined%7Cinstall%3Dundefined%7Css%3Dundefined%7Cmb%3Dundefined%7Ctm%3Dundefined%7Cage%3Dundefined%7Ccount%3D%7Ctime%3D%7Cglid%3D; r=g; _ym_visorc_51115208=w; _gat_UA-10312824-1=1'
@@ -649,7 +651,7 @@ def main_parse(p, urls):
                             except urllib.error.HTTPError as e:
                                 #if (e.code == 403):
                                 proxy, useragent = change_proxy()
-                                s.headers.update({'User-Agent': useragent})
+                                headers['User-Agent'] = useragent
                                 continue
 
                             except EXCEPTIONS_TO_RETRY as e:
@@ -657,7 +659,7 @@ def main_parse(p, urls):
                                 continue
                                 # proxy, useragent = change_proxy()
                                 # headers['User-Agent'] = useragent
-                                # print('Error Occurred in function and try again')
+                                # print('Error Occurred in function mainparser and try again')
                                 # continue
                             except exception as e:
                                 print(e)
@@ -683,21 +685,21 @@ def main_parse(p, urls):
                         companyName, companyURL, companyAddress,companyLocation,companyType, companyTrustType, companyProductName,companyRate,productURL = "","","","","","","","",""
 
                         if (product.find('h4', class_="lcname")):
-                            companyName = product.find('h4', class_="lcname").text
+                            companyName = product.find('h4', class_="lcname").text.strip()
                         if (product.find('div' , class_= "r-cl") and product.find('div' , class_= "r-cl").find('a') and product.find('div' , class_= "r-cl").find('a')['href']):
                             companyURL = product.find('div' , class_= "r-cl").find('a')['href']
                         if (product.find('span' , class_= "to-txt")):
                             companyAddress = product.find('span' , class_= "to-txt").text
                         if (product.find('p', class_="sm clg")):
-                            companyLocation = product.find('p', class_="sm clg").text.replace(companyAddress, '')
+                            companyLocation = product.find('p', class_="sm clg").text.replace(companyAddress, '').strip()
                         if (product.find('p', class_="ig mrg") and product.find('p', class_="ig mrg").find('span')):
-                            companyType = product.find('p', class_="ig mrg").find('span').text
+                            companyType = product.find('p', class_="ig mrg").find('span').text.strip()
                         if (product.find('span' , class_="bg t_se")):
-                            companyTrustType = product.find('span' , class_="bg t_se").text
+                            companyTrustType = product.find('span' , class_="bg t_se").text.strip()
                         if (product.find('h3', class_="lg")):
-                            companyProductName = product.find('h3', class_="lg").text
+                            companyProductName = product.find('h3', class_="lg").text.strip()
                         if (product.find('span' , class_="prc cur")):
-                            companyRate = product.find('span' , class_="prc cur").text.replace('Get Latest Price','').replace(' ', '')
+                            companyRate = product.find('span' , class_="prc cur").text.replace('Get Latest Price','').replace(' ', '').strip()
                         if (product.find('a', class_="pnm ldf cur") and product.find('a', class_="pnm ldf cur")['href']):
                             productURL = product.find('a', class_="pnm ldf cur")['href']
 
@@ -739,13 +741,13 @@ def main_parse(p, urls):
             except urllib.error.HTTPError as e:
                 if (e.code == 403):
                     proxy, useragent = change_proxy()
-                    s.headers.update({'User-Agent': useragent})
+                    headers['User-Agent'] = useragent
                     continue
 
             except:
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
-                print('Error Occurred in function and try again')
+                print('Error Occurred in function mainparser and try again')
                 continue
             else:
                 break
@@ -786,24 +788,24 @@ f = open('indiamart_result.json','a')
 total_urls = read_category_url()
 
 
-# UrlListToRun = chunkIt(total_urls, 5)
-#
-#
-# number_processes = 5
-# parts = chunkIt(UrlListToRun[0], number_processes)
-#
-# processes = []
-#
-# for i in range(number_processes):
-#     processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
-#
-#
-# for p in processes:
-#     p.start()
-#
-# for p in processes:
-#     p.join()
+UrlListToRun = chunkIt(total_urls, 5)
 
-main_parse(1 ,total_urls)
+
+number_processes = 5
+parts = chunkIt(UrlListToRun[0], number_processes)
+
+processes = []
+
+for i in range(number_processes):
+    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
+
+
+for p in processes:
+    p.start()
+
+for p in processes:
+    p.join()
+
+#main_parse(1 ,total_urls)
 
 f.close()

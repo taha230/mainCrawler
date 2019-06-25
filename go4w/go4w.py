@@ -13,6 +13,7 @@ import multiprocessing
 from scrapy.core.downloader.handlers.http11 import TunnelError
 import requests
 import requests.exceptions
+import time
 ##################################################
 ##################################################
 headers = {
@@ -73,18 +74,18 @@ def change_proxy():
         try:
             resp = requests.get(url=url, params=params, timeout=5)
             data = json.loads(resp.text)
+            print('Changing Proxy ... ' + data['proxy'])
+            print('********************************************')
+            return data['proxy'], data['randomUserAgent']
 
         except:
             print('Exception occured in changeproxy')
+            time.sleep(60)
             continue
 
-        else:
-            break
 
 
-    print('Changing Proxy ... ' + data['proxy'])
-    print('********************************************')
-    return data['proxy'], data['randomUserAgent']
+
 
 ##################################################
 def chunkIt(seq, num):
@@ -151,6 +152,7 @@ def clean_text_(text):
     text_5 = text_4.replace('[]', '').strip()  # remove  [] for empty list
     text_6 = text_5.replace('\']', '').replace('[\'', '')  # remove [' and '] for start and end list
     text_7 = text_6.replace('\\r', '')  # remove \r from text
+    text_8 = text_7.replace('\r', '')  # remove \r from text
 
     return text_7
 
@@ -287,16 +289,18 @@ def nestedURLOurCompanyCrawler(url, s, proxy):
             if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             print('Error Occurred in OurcompanyCrawler function and try again')
+            time.sleep(30)
             continue
 
         except:
-            print('Exception occured in OurcompanyCrawler')
+            print('Exception occured in OurcompanyCrawler in url:' + url)
             return {}
 
         else:
@@ -359,15 +363,17 @@ def nestedURLProductsCompanyCrawler(url, s, proxy):
             if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLProductsCompanyCrawler function and try again')
+            time.sleep(30)
             continue
         except:
-            print('Exception occured in nestedURLProductsCompanyCrawler')
+            print('Exception occured in nestedURLProductsCompanyCrawler in url:' + url)
             return {}
 
         else:
@@ -405,16 +411,18 @@ def nestedURLManagementCompanyCrawler(url, s, proxy):
             if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLManagementCompanyCrawler function and try again')
+            time.sleep(30)
             continue
 
         except:
-            print('Exception occured in nestedURLManagementCompanyCrawler')
+            print('Exception occured in nestedURLManagementCompanyCrawler in url:' + url)
             return {}
 
         else:
@@ -464,15 +472,17 @@ def nestedURLFacilitiesCompanyCrawler(url, s, proxy):
             if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLFacilitiesCompanyCrawler function and try again')
+            time.sleep(30)
             continue
         except:
-            print('Exception occured in nestedURLFacilitiesCompanyCrawler')
+            print('Exception occured in nestedURLFacilitiesCompanyCrawler in url:' + url)
             return {}
 
         else:
@@ -509,15 +519,17 @@ def nestedURLNewsRoomCompanyCrawler(url, s, proxy):
             if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLNewsRoomCompanyCrawler function and try again')
+            time.sleep(30)
             continue
         except:
-            print('Exception occured in nestedURLNewsRoomCompanyCrawler')
+            print('Exception occured in nestedURLNewsRoomCompanyCrawler in url:' + url)
             return {}
 
         else:
@@ -548,7 +560,7 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
             nestedResult ={}
 
             for  i in range(len(mainTabList)):
-                if (mainTabList[i].find('a')):
+                if (mainTabList[i].find('a') and mainTabList[i].find('a')['href']):
                     if ('Company' in mainTabList[i].find('a').text):
                         isOurCompanySelected = mainTabList[i].find('a')['href']
                     elif ('Products' in mainTabList[i].find('a').text):
@@ -620,15 +632,17 @@ def nestedURLGeneralCompanyCrawler(url, result , s , proxy):
             if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             print('Error Occurred in nestedURLGeneralCompanyCrawler function and try again')
+            time.sleep(30)
             continue
         except:
-            print('Exception occured in nestedURLGeneralCompanyCrawler')
+            print('Exception occured in nestedURLGeneralCompanyCrawler in url:' + url)
             return {}
 
         else:
@@ -678,7 +692,8 @@ def buyerCrawler(url, s, proxy):
                 if (searchResultSet.find('div') and searchResultSet.find('div').find('a')):
                     aList = searchResultSet.find('div').find_all('a')
                     for a in aList:
-                        buyerBuyerOF += ( " " + clean_text_(a.text.strip()).replace('Buyer Of', ''))
+                        if ('Buyer Of' in a.text):
+                            buyerBuyerOF += ( " " + clean_text_(a.text.strip()).replace('Buyer Of', ''))
 
                 if (searchResultSet.find('a') and searchResultSet.find('a')['href']):
                     buyerCompanyLink = searchResultSet.find('a')['href']
@@ -693,7 +708,7 @@ def buyerCrawler(url, s, proxy):
                     'date' : date,
                     'buyerProductName' : buyerProductName,
                     'buyerCountry' : buyerCountry,
-                    'buyerText' : buyerText,
+                    'buyerText' : clean_text_(buyerText),
                     'buyerBuyerOF' : buyerBuyerOF,
                     'buyerCompanyLink' : buyerCompanyLink,
                     'isSupplier' : isSupplier,
@@ -780,7 +795,8 @@ def supplierCrawler(url, s, proxy):
                 if (searchResultSet.find('div') and searchResultSet.find('div').find('a')):
                     aList = searchResultSet.find('div').find_all('a')
                     for a in aList:
-                        supplierSupplierOF += ( " " + clean_text_(str(a.text.strip()).replace('Supplier Of','')))
+                        if ('Supplier Of' in a.text):
+                            supplierSupplierOF += ( " " + clean_text_(str(a.text.strip()).replace('Supplier Of','')))
 
                 if (searchResultSet.find('a')):
                     supplierCompanyLink = searchResultSet.find('a')['href']
@@ -795,7 +811,7 @@ def supplierCrawler(url, s, proxy):
                     'supplierCompanyName': supplierCompanyName,
                     'date': date,
                     'supplierCountry': supplierCountry,
-                    'supplierText': supplierText,
+                    'supplierText': clean_text_(supplierText),
                     'supplierSupplierOF': supplierSupplierOF,
                     'supplierCompanyLink': supplierCompanyLink,
                     'isSupplier': isSupplier,
@@ -823,16 +839,18 @@ def supplierCrawler(url, s, proxy):
             if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
                 continue
         except EXCEPTIONS_TO_RETRY as e:
             print (e)
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             print('Error Occurred in supplierCrawler function and try again')
+            time.sleep(30)
             continue
 
         except:
-            print('Exception occured in supplierCrawler')
+            print('Exception occured in supplierCrawler in url:' + url)
             break
 
         else:
@@ -906,17 +924,23 @@ def main_parse(p, urls):
             except requests.exceptions.HTTPError:
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
+                time.sleep(30)
+
                 continue
             except EXCEPTIONS_TO_RETRY as e:
                 print (e)
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
                 print('Error Occurred in main_parse function and try again')
+                time.sleep(30)
+
                 continue
             except:
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
                 print('Error Occurred in main_parse function and try again')
+                time.sleep(30)
+
                 continue
 
             else:
