@@ -1,0 +1,32 @@
+[
+  {
+    "person_id": 3,
+    "first_name": "Melli",
+    "last_name": "Winchcum",
+    "phone": "+7 171 898 0853",
+    "email": "me_wi@yahoo.com",
+    "gender": "Male",
+    "location": "Iran",
+    "SN_ID": "me_wi"
+  },
+  {
+    "person_id": 2,
+    "first_name": "Celinda",
+    "last_name": "Bonick",
+    "phone": "+370 351 224 5176",
+    "email": "ce_bo@yahoo.com",
+    "gender": "Male",
+    "location": "London",
+    "SN_ID": "ce_bo"
+  },
+  {
+    "person_id": 1,
+    "first_name": "Chryste",
+    "last_name": "Lilywhite",
+    "phone": "+81 308 988 7153",
+    "email": "ch_li@gmail.com",
+    "gender": "Female",
+    "location": "Chicago",
+    "SN_ID": "che_li"
+  }
+]

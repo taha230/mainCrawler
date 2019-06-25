@@ -1,0 +1,20 @@
+[
+  {
+    "company_id": 1,
+    "name": "Telecom",
+    "email": "tele@yahoo.com",
+    "phone": "+98 69656485",
+    "location": "USA",
+    "SN_ID": "tele",
+    "scope": "Agri"
+  },
+  {
+    "company_id": 2,
+    "name": "AmootIranian",
+    "email": "amoot@yahoo.com",
+    "phone": "+98 696254785",
+    "location": "Iran",
+    "SN_ID": "amoot",
+    "scope": "mineral"
+  }
+]

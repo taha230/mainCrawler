@@ -1,0 +1,10 @@
+sudo grakn server start
+
+grakn console --keyspace mineral --file ~/Documents/knowledgeGraph/grakn/mineral/files/schema/schema.gql
+
+
+grakn console --keyspace mineral
+
+
+
+match $x sub thing; get;

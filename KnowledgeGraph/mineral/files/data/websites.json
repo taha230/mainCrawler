@@ -1,0 +1,12 @@
+[
+  {
+    "url": "www.google.com",
+    "host": "Iran",
+    "server": "Iran"
+  },
+  {
+    "url": "www.yahoo.com",
+    "host": "USA",
+    "server": "USA"
+  }
+]
