@@ -14,6 +14,7 @@ from scrapy.core.downloader.handlers.http11 import TunnelError
 import requests
 import requests.exceptions
 import time
+from pymongo import MongoClient
 ##################################################
 ##################################################
 headers = {
@@ -27,7 +28,7 @@ def create_category_url():
     function_name: create_category_url
     input: none
     output: start_urls for scrapy
-    description: add products to urls from products_alibaba.json file
+    description: add products to urls from products_go4w.json file
     '''
     with open('products_go4w.json') as f:
         products = json.load(f)
@@ -40,6 +41,7 @@ def create_category_url():
         #return urls
 
     return urls
+
 
 ##################################################
 def isListEmpty(inList):
@@ -154,7 +156,7 @@ def clean_text_(text):
     text_7 = text_6.replace('\\r', '')  # remove \r from text
     text_8 = text_7.replace('\r', '')  # remove \r from text
 
-    return text_7
+    return text_8
 
 ###################################################
 def clean_backslashN_array(inputArray):
@@ -218,7 +220,7 @@ def tokenize_buyer_or_supplier_text(result):
                 clean_t_ = t.split(":")
                 if (len(clean_t_) == 2 and len(clean_t_[0].replace('\n', '').replace(' ', '').strip()) > 0 and len(
                         clean_t_[1].replace(' ', '').replace('\n', '').strip()) > 0):
-                    newResult[str(clean_t_[0].replace('\n', '').replace(' ', '').replace('.', '').strip())] = clean_t_[
+                    newResult[str(clean_text_(clean_t_[0]))] = clean_t_[
                         1].replace(' ', '').replace('\n', '').strip()
 
         except:
@@ -901,8 +903,6 @@ def main_parse(p, urls):
                                 nextPageURL = url+"?region=worldwide&pg_buyers=" + str(i+1) # +1 to start from 1 to buyerPageNum
                                 buyerCrawler(nextPageURL, s, proxy)
 
-
-
                 ###############################################################################
                 elif (isSupplierSelected):
                     if (soup.find('ul', class_ ="pagination") and soup.find('ul', class_ ="pagination").find_all('li')):
@@ -983,7 +983,10 @@ for p in processes:
     p.join()
 
 
-#main_parse(1 ,urls)
+main_parse(1 ,total_urls)
+
 
 f.close()
+
+
 
