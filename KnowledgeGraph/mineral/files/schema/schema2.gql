@@ -1,0 +1,980 @@
+define
+
+ person sub entity,
+  has first_name,
+  has last_name,
+  has gender,
+  has email,
+  has phone,
+  has location,
+  has SN_ID,
+  key person_id,
+  plays employee,
+  plays broker_product_owner,
+  plays broker_seller,
+  plays broker_request_owner,
+  plays broker_buyer;
+
+
+ company sub entity,
+  has name,
+  has email,
+  has phone,
+  has country,
+  has address,
+  has SN_ID,
+  has scope,
+  key company_id,
+  plays company_product_owner,
+  plays company_website_owner,
+  plays company_request_owner,
+  plays employer;
+
+ website sub entity,
+  key url,
+  has server,
+  has host,
+  plays website_tag_owner,
+  plays company_website;
+
+ tag sub entity,
+  key name,
+  has score,
+  plays website_tag;
+
+ product sub entity,
+  key product_id,
+  has name,
+  plays company_product,
+  plays company_request_product,
+  plays broker_request_product,
+  plays broker_product;
+
+ employ sub relation,
+  relates employee,
+  relates employer,
+  has position;
+
+ company_request sub relation,
+  relates company_request_owner,
+  relates company_request_product,
+  has request_date;
+
+ broker_request sub relation,
+  relates broker_request_owner,
+  relates broker_request_product,
+  has request_date;
+
+ broker_relation sub relation,
+  relates broker_seller,
+  relates broker_buyer;
+
+ product_broker_relation sub relation,
+  relates broker_product_owner,
+  relates broker_product;
+
+ tag_relation sub relation,
+  relates website_tag,
+  relates website_tag_owner;
+
+ website_relation sub relation,
+  relates company_website_owner,
+  relates company_website;
+
+ product_company_relation sub relation,
+  relates company_product_owner,
+  relates company_product;
+
+
+ Agriculture_Food sub product;
+ Apparel_Textiles_Accessories sub product;
+ Auto_Transportation sub product;
+ Bags_Shoes_Accessories sub product;
+ Electronics sub product;
+ Electrical_Equipment_Components_Telecoms sub product;
+ Gifts_Sports_Toys sub product;
+ Health_Beauty sub product;
+ Home_Lights_Construction sub product;
+ Machinery_IndustrialParts_Tools sub product;
+ Metallurgy_Chemicals_Rubber_Plastics sub product;
+ Packaging_Advertising_Office sub product;
+
+ Agriculture sub Agriculture_Food;
+
+ Agricultural_Waste sub Agriculture;
+ Beans sub Agriculture;
+ Coffee_Beans sub Agriculture;
+ Feed sub Agriculture;
+ Fruit sub Agriculture;
+ HerbalCigars_Cigarettes sub Agriculture;
+ Nuts_Kernels sub Agriculture;
+ Ornamental_Plants sub Agriculture;
+ Plant_AnimalOil sub Agriculture;
+ TimberRawMaterials sub Agriculture;
+ Vegetables sub Agriculture;
+ Animal_Products sub Agriculture;
+ FarmMachinery_Equipment sub Agriculture;
+ CocoaBeans sub Agriculture;
+ Fresh_Seafood sub Agriculture;
+ Grain sub Agriculture;
+ Mushrooms_Truffles sub Agriculture;
+ Organic_Produce sub Agriculture;
+ Other_Agriculture_Products sub Agriculture;
+ Plant_Seeds_Bulbs sub Agriculture;
+ Vanilla_Beans sub Agriculture;
+
+ Food_Beverage sub Agriculture_Food;
+
+ Alcoholic_Beverage sub Food_Beverage;
+ Baked_Goods sub Food_Beverage;
+ Canned_Food sub Food_Beverage;
+ Confectionery sub Food_Beverage;
+ Drinking_Water sub Food_Beverage;
+ Food_Ingredients sub Food_Beverage;
+ Grain_Products sub Food_Beverage;
+ Instant_Food sub Food_Beverage;
+ Other_Food_Beverage sub Food_Beverage;
+ Seasonings_Condiments sub Food_Beverage;
+ Snack_Food sub Food_Beverage;
+ Tea sub Food_Beverage;
+ Baby_Food sub Food_Beverage;
+ Bean_Products sub Food_Beverage;
+ Coffee sub Food_Beverage;
+ Dairy sub Food_Beverage;
+ Egg_Egg_Products sub Food_Beverage;
+ Fruit_Products sub Food_Beverage;
+ Honey_Products sub Food_Beverage;
+ Meat_Poultry sub Food_Beverage;
+ Seafood sub Food_Beverage;
+ Slimming_Food sub Food_Beverage;
+ Soft_Drinks sub Food_Beverage;
+ Vegetable_Products sub Food_Beverage;
+
+ Apparel sub Apparel_Textiles_Accessories;
+
+ Apparel_Design_Services sub Apparel;
+ Apparel_Stock sub Apparel;
+ Costumes sub Apparel;
+ Garment_Accessories sub Apparel;
+ Infant_Toddlers_Clothing sub Apparel;
+ Maternity_Clothing sub Apparel;
+ Sewing_Supplies sub Apparel;
+ Stage_Dance_Wear sub Apparel;
+ Uniforms sub Apparel;
+ Wedding_Apparel_Accessories sub Apparel;
+ Apparel_Processing_Services sub Apparel;
+ Boys_Clothing sub Apparel;
+ Ethnic_Clothing sub Apparel;
+ Girls_Clothing sub Apparel;
+ Mannequins sub Apparel;
+ Mens_Clothing sub Apparel;
+ Sportswear sub Apparel;
+ Tag_Guns sub Apparel;
+ Used_Clothes sub Apparel;
+ Womens_Clothing sub Apparel;
+
+ Textile_Leather_Product sub Apparel_Textiles_Accessories;
+
+ Down_Feather sub Textile_Leather_Product;
+ Fiber sub Textile_Leather_Product;
+ Grey_Fabric sub Textile_Leather_Product;
+ Leather sub Textile_Leather_Product;
+ Other_Textiles_Leather_Products sub Textile_Leather_Product;
+ Textile_Processing sub Textile_Leather_Product;
+ Thread sub Textile_Leather_Product;
+ Hundred_Percent_Cotton_Fabric sub Textile_Leather_Product;
+ Bedding_Set sub Textile_Leather_Product;
+ Chair_Cover sub Textile_Leather_Product;
+ Fabric sub Textile_Leather_Product;
+ Fur sub Textile_Leather_Product;
+ Home_Textile sub Textile_Leather_Product;
+ Leather_Product sub Textile_Leather_Product;
+ Textile_Accessories sub Textile_Leather_Product;
+ Textile_Stock sub Textile_Leather_Product;
+ Yarn sub Textile_Leather_Product;
+ Hundred_Percent_Polyester_Fabric sub Textile_Leather_Product;
+ Towel sub Textile_Leather_Product;
+ Genuine_Leather sub Textile_Leather_Product;
+
+ Fashion_Accessories sub Apparel_Textiles_Accessories;
+
+ Belt_Accessories sub Fashion_Accessories;
+ Fashion_Accessories_Design_Services sub Fashion_Accessories;
+ Fashion_Accessories_Stock sub Fashion_Accessories;
+ Scarf_Hat_Glove_Sets sub Fashion_Accessories;
+ Scarves_Shawls sub Fashion_Accessories;
+ Genuine_Leather_Belts sub Fashion_Accessories;
+ Ties_Accessories sub Fashion_Accessories;
+ PU_Belts sub Fashion_Accessories;
+ Metal_Belts sub Fashion_Accessories;
+ Belts sub Fashion_Accessories;
+ Fashion_Accessories_Processing_Services sub Fashion_Accessories;
+ Gloves_Mittens sub Fashion_Accessories;
+ Hats_Caps sub Fashion_Accessories;
+ Hair_Accessories sub Fashion_Accessories;
+ Leather_Gloves_Mittens sub Fashion_Accessories;
+ Belt_Buckles sub Fashion_Accessories;
+ Belt_Chains sub Fashion_Accessories;
+ Suspenders sub Fashion_Accessories;
+
+
+ Timepieces_Jewelry_Eyewear sub Apparel_Textiles_Accessories;
+
+ Eyewear sub Timepieces_Jewelry_Eyewear;
+ Watches sub Timepieces_Jewelry_Eyewear;
+ Sunglasses sub Timepieces_Jewelry_Eyewear;
+ Body_Jewelry sub Timepieces_Jewelry_Eyewear;
+ Brooches sub Timepieces_Jewelry_Eyewear;
+ Earrings sub Timepieces_Jewelry_Eyewear;
+ Jewelry_Sets sub Timepieces_Jewelry_Eyewear;
+ Loose_Beads sub Timepieces_Jewelry_Eyewear;
+ Necklaces sub Timepieces_Jewelry_Eyewear;
+ Rings sub Timepieces_Jewelry_Eyewear;
+ Jewelry sub Timepieces_Jewelry_Eyewear;
+ Eyeglasses_Frames sub Timepieces_Jewelry_Eyewear;
+ Sports_Eyewear sub Timepieces_Jewelry_Eyewear;
+ Bracelets_Bangles sub Timepieces_Jewelry_Eyewear;
+ Cuff_Links_Tie_Clips sub Timepieces_Jewelry_Eyewear;
+ Jewelry_Boxes sub Timepieces_Jewelry_Eyewear;
+ Jewelry_Tools_Equipment sub Timepieces_Jewelry_Eyewear;
+ Loose_Gemstone sub Timepieces_Jewelry_Eyewear;
+ Pendants_Charms sub Timepieces_Jewelry_Eyewear;
+ Wristwatches sub Timepieces_Jewelry_Eyewear;
+
+ Vehicles_Accessories sub Auto_Transportation;
+
+ Automobiles sub Vehicles_Accessories;
+ Trailers sub Vehicles_Accessories;
+ Trucks sub Vehicles_Accessories;
+ Marine_Parts_Accessories sub Vehicles_Accessories;
+ Trains sub Vehicles_Accessories;
+ Auto_Parts_Accessories sub Vehicles_Accessories;
+ Bus_Parts_Accessories sub Vehicles_Accessories;
+ Bus sub Vehicles_Accessories;
+ Other_Vehicle_Parts_Accessories sub Vehicles_Accessories;
+ Tricycles sub Vehicles_Accessories;
+ New_Energy_Vehicle_Parts_Accessories sub Vehicles_Accessories;
+ Golf_Carts sub Vehicles_Accessories;
+ Truck_Parts_Accessories sub Vehicles_Accessories;
+ Motorcycles_Scooters sub Vehicles_Accessories;
+ Emergency_Vehicles sub Vehicles_Accessories;
+ ATVs_UTVs sub Vehicles_Accessories;
+ Containers sub Vehicles_Accessories;
+ Other_Vehicles sub Vehicles_Accessories;
+
+ Luggage_Bags_Cases sub Bags_Shoes_Accessories;
+
+ Bag_Luggage_Making_Materials sub Luggage_Bags_Cases;
+ Business_Bags_Cases sub Luggage_Bags_Cases;
+ Handbags_Messenger_Bags sub Luggage_Bags_Cases;
+ Luggage_Cart sub Luggage_Bags_Cases;
+ Special_Purpose_Bags_Cases sub Luggage_Bags_Cases;
+ Wallets_Holders sub Luggage_Bags_Cases;
+ Luggage_Sets sub Luggage_Bags_Cases;
+ Briefcases sub Luggage_Bags_Cases;
+ Shopping_Bags sub Luggage_Bags_Cases;
+ Backpacks sub Luggage_Bags_Cases;
+ Bag_Parts_Accessories sub Luggage_Bags_Cases;
+ Digital_Gear_Camera_Bags sub Luggage_Bags_Cases;
+ Luggage_Travel_Bags sub Luggage_Bags_Cases;
+ Other_Luggage_Bags_Cases sub Luggage_Bags_Cases;
+ Sports_Leisure_Bags sub Luggage_Bags_Cases;
+ Carry-on_Luggage sub Luggage_Bags_Cases;
+ Trolley_Bags sub Luggage_Bags_Cases;
+ Cosmetic_Bags_Cases sub Luggage_Bags_Cases;
+ Handbags sub Luggage_Bags_Cases;
+ Wallets sub Luggage_Bags_Cases;
+
+
+ Shoes_Accessories sub Bags_Shoes_Accessories;
+
+ Baby_Shoes sub Shoes_Accessories;
+ Dance_Shoes sub Shoes_Accessories;
+ Mens_Shoes sub Shoes_Accessories;
+ Shoe_Materials sub Shoes_Accessories;
+ Shoe_Repairing_Equipment sub Shoes_Accessories;
+ Shoes_Processing_Services sub Shoes_Accessories;
+ Special_Purpose_Shoes sub Shoes_Accessories;
+ Used_Shoes sub Shoes_Accessories;
+ Childrens_Shoes sub Shoes_Accessories;
+ Genuine_Leather_Shoes sub Shoes_Accessories;
+ Other_Shoes sub Shoes_Accessories;
+ Shoe_Parts_Accessories sub Shoes_Accessories;
+ Shoes_Design_Services sub Shoes_Accessories;
+ Shoes_Stock sub Shoes_Accessories;
+ Sports_Shoes sub Shoes_Accessories;
+ Womens_Shoes sub Shoes_Accessories;
+
+
+ Consumer_Electronic sub Electronics;
+
+ Computer_Hardware_Software sub Consumer_Electronic;
+ Accessories_Parts sub Consumer_Electronic;
+ Electronic_Publications sub Consumer_Electronic;
+ Mobile_Phone_Accessories sub Consumer_Electronic;
+ Portable_Audio_Video_Accessories sub Consumer_Electronic;
+ Portable_Audio_Video_Accessories sub Consumer_Electronic;
+ Mobile_Phones sub Consumer_Electronic;
+ Power_Banks sub Consumer_Electronic;
+ Radio_TV_Accessories sub Consumer_Electronic;
+ Television sub Consumer_Electronic;
+ Charger sub Consumer_Electronic;
+ Electronic_Cigarettes sub Consumer_Electronic;
+ Camera_Photo_Accessories sub Consumer_Electronic;
+ Home_Audio_Video_Accessories sub Consumer_Electronic;
+ Other_Consumer_Electronics sub Consumer_Electronic;
+ Video_Game_Accessories sub Consumer_Electronic;
+ Earphone_Headphone sub Consumer_Electronic;
+ Digital_Camera sub Consumer_Electronic;
+ Speaker sub Consumer_Electronic;
+ Cables sub Consumer_Electronic;
+ Digital_Battery sub Consumer_Electronic;
+
+
+ Home_Appliance sub Electronics;
+
+ Air_Conditioning_Appliances sub Home_Appliance;
+ Hand_Dryers sub Home_Appliance;
+ Home_Appliances_Stocks sub Home_Appliance;
+ Kitchen_Appliances sub Home_Appliance;
+ Other_Home_Appliances sub Home_Appliance;
+ Water_Heaters sub Home_Appliance;
+ Wet_Towel_Dispensers sub Home_Appliance;
+ Fans sub Home_Appliance;
+ Solar_Water_Heaters sub Home_Appliance;
+ Coffee_Makers sub Home_Appliance;
+ Cleaning_Appliances sub Home_Appliance;
+ Home_Appliance_Parts sub Home_Appliance;
+ Home_Heaters sub Home_Appliance;
+ Laundry_Appliances sub Home_Appliance;
+ Refrigerators_Freezers sub Home_Appliance;
+ Water_Treatment_Appliances sub Home_Appliance;
+ Air_Conditioners sub Home_Appliance;
+ Vacuum_Cleaners sub Home_Appliance;
+ Cooking_Appliances sub Home_Appliance;
+ Blenders sub Home_Appliance;
+
+
+ Security_Protection sub Electronics;
+
+ Locks_Keys sub Security_Protection;
+ CCTV_Products sub Security_Protection;
+ Access_Control_Systems_Products sub Security_Protection;
+ Locksmith_Supplies sub Security_Protection;
+ Police_Military_Supplies sub Security_Protection;
+ Safes sub Security_Protection;
+ Self_Defense_Supplies sub Security_Protection;
+ CCTV_Camera sub Security_Protection;
+ Alcohol_Tester sub Security_Protection;
+ Personal_Protective_Equipment sub Security_Protection;
+ Alarm sub Security_Protection;
+ Firefighting_Supplies sub Security_Protection;
+ Other_Security_Protection_Products sub Security_Protection;
+ Roadway_Safety sub Security_Protection;
+ Other_Security_Protection_Products sub Security_Protection;
+ Security_Services sub Security_Protection;
+ Water_Safety_Products sub Security_Protection;
+ Bullet_Proof_Vest sub Security_Protection;
+ Fire_Alarm sub Security_Protection;
+
+
+ Electrical_Equipment_Supplies sub Electrical_Equipment_Components_Telecoms;
+
+ Electrical_Solar_Energy_Products sub Electrical_Equipment_Supplies;
+ Electrical_Instruments sub Electrical_Equipment_Supplies;
+ Connectors_Terminals sub Electrical_Equipment_Supplies;
+ Contactors sub Electrical_Equipment_Supplies;
+ Motors sub Electrical_Equipment_Supplies;
+ Electronic_Instrument_Enclosures sub Electrical_Equipment_Supplies;
+ Fuses sub Electrical_Equipment_Supplies;
+ Power_Accessories sub Electrical_Equipment_Supplies;
+ Power_Supplies sub Electrical_Equipment_Supplies;
+ Relays sub Electrical_Equipment_Supplies;
+ Transformers sub Electrical_Equipment_Supplies;
+ Wiring_Accessories sub Electrical_Equipment_Supplies;
+ Batteries sub Electrical_Equipment_Supplies;
+ Circuit_Breakers sub Electrical_Equipment_Supplies;
+ Industrial_Controls sub Electrical_Equipment_Supplies;
+ Electrical_Plugs_Sockets sub Electrical_Equipment_Supplies;
+ Electrical_Supplies sub Electrical_Equipment_Supplies;
+ Fuse_Components sub Electrical_Equipment_Supplies;
+ Generators sub Electrical_Equipment_Supplies;
+ Power_Distribution_Equipment sub Electrical_Equipment_Supplies;
+ Professional_Audio_Video_Lighting sub Electrical_Equipment_Supplies;
+ Switches sub Electrical_Equipment_Supplies;
+ Solar_Cells_Solar_Panel sub Electrical_Equipment_Supplies;
+ Wires_Cables_Cable_Assemblies sub Electrical_Equipment_Supplies;
+
+
+ Telecommunication sub Electrical_Equipment_Components_Telecoms;
+
+ Antennas_for_Communications sub Telecommunication;
+ Telephones_Accessories sub Telecommunication;
+ Fiber_Optic_Equipment sub Telecommunication;
+ WiFi_Finder sub Telecommunication;
+ Corded_Telephones sub Telecommunication;
+ Wireless_Networking_Equipment sub Telecommunication;
+ VoIP_Products sub Telecommunication;
+ PBX sub Telecommunication;
+ Phone_Cards sub Telecommunication;
+ Answering_Machines sub Telecommunication;
+ Communication_Equipment sub Telecommunication;
+ Communication_Cables sub Telecommunication;
+ Fixed_Wireless_Terminals sub Telecommunication;
+ Telephone_Accessories sub Telecommunication;
+ Cordless_Telephones sub Telecommunication;
+ Telephone_Headsets sub Telecommunication;
+ Repeater sub Telecommunication;
+ Telecom_Parts sub Telecommunication;
+ Telephone_Cords sub Telecommunication;
+ Caller_ID_Boxes sub Telecommunication;
+
+
+ Sports_Entertainment sub Gifts_Sports_Toys;
+
+ Amusement_Park sub Sports_Entertainment;
+ Fitness_Body_Building sub Sports_Entertainment;
+ Golf sub Sports_Entertainment;
+ Musical_Instruments sub Sports_Entertainment;
+ Outdoor_Sports sub Sports_Entertainment;
+ Sports_Safety sub Sports_Entertainment;
+ Team_Sports sub Sports_Entertainment;
+ Water_Sports sub Sports_Entertainment;
+ Camping_Hiking sub Sports_Entertainment;
+ Gym_Equipment sub Sports_Entertainment;
+ Artificial_Grass_Sports_Flooring sub Sports_Entertainment;
+ Gambling sub Sports_Entertainment;
+ Indoor_Sports sub Sports_Entertainment;
+ Other_Sports_Entertainment_Products sub Sports_Entertainment;
+ Sports_Gloves sub Sports_Entertainment;
+ Sports_Souvenirs sub Sports_Entertainment;
+ Tennis sub Sports_Entertainment;
+ Winter_Sports sub Sports_Entertainment;
+ Scooters sub Sports_Entertainment;
+ Swimming_Diving sub Sports_Entertainment;
+
+
+ Gifts_Crafts sub Gifts_Sports_Toys;
+
+ Arts_Crafts_Stocks sub Gifts_Crafts;
+ Arts_Crafts_Stocks sub Gifts_Crafts;
+ Festive_Party_Supplies sub Gifts_Crafts;
+ Gift_Sets sub Gifts_Crafts;
+ Home_Decoration sub Gifts_Crafts;
+ Knitting_Crocheting sub Gifts_Crafts;
+ Lanyard sub Gifts_Crafts;
+ Music_Boxes sub Gifts_Crafts;
+ Sculptures sub Gifts_Crafts;
+ Stickers sub Gifts_Crafts;
+ Crafts sub Gifts_Crafts;
+ Cross_Stitch sub Gifts_Crafts;
+ Flags_Banners_Accessories sub Gifts_Crafts;
+ Holiday_Gifts sub Gifts_Crafts;
+ Key_Chains sub Gifts_Crafts;
+ Lacquerware sub Gifts_Crafts;
+ Money_Boxes sub Gifts_Crafts;
+ Pottery_Enamel sub Gifts_Crafts;
+ Souvenirs sub Gifts_Crafts;
+ Wedding_Decorations_Gifts sub Gifts_Crafts;
+
+
+ Toys_Hobbies sub Gifts_Sports_Toys;
+
+ Action_Figure sub Toys_Hobbies;
+ Balloons sub Toys_Hobbies;
+ Classic_Toys sub Toys_Hobbies;
+ Educational_Toys sub Toys_Hobbies;
+ Glass_Marbles sub Toys_Hobbies;
+ Light-Up_Toys sub Toys_Hobbies;
+ Other_Toys_Hobbies sub Toys_Hobbies;
+ Plastic_Toys sub Toys_Hobbies;
+ Solar_Toys sub Toys_Hobbies;
+ Toy_Animal sub Toys_Hobbies;
+ Toy_Parts sub Toys_Hobbies;
+ Toy_Vehicle sub Toys_Hobbies;
+ Wooden_Toys sub Toys_Hobbies;
+ Baby_Toys sub Toys_Hobbies;
+ Candy_Toys sub Toys_Hobbies;
+ Dolls sub Toys_Hobbies;
+ Electronic_Toys sub Toys_Hobbies;
+ Inflatable_Toys sub Toys_Hobbies;
+ Noise_Maker sub Toys_Hobbies;
+ Outdoor_Toys_Structures sub Toys_Hobbies;
+ Pretend_Play_Preschool sub Toys_Hobbies;
+ Toy_Accessories sub Toys_Hobbies;
+ Toy_Guns sub Toys_Hobbies;
+ Toy_Robots sub Toys_Hobbies;
+ Wind_Up_Toys sub Toys_Hobbies;
+
+ Health_Medical sub Health_Beauty;
+
+ Animal_Extract sub Health_Medical;
+ Body_Weight sub Health_Medical;
+ Health_Care_Supplies sub Health_Medical;
+ Prepared_Drugs_In_Pieces sub Health_Medical;
+ Body_Fluid-Processing_Circulation_Devices sub Health_Medical;
+ Dental_Equipment sub Health_Medical;
+ Equipments_of_Traditional_Chinese_Medicine sub Health_Medical;
+ Implants_Interventional_Materials sub Health_Medical;
+ Equipments_Traditional_Chinese_Medicine sub Health_Medical;
+ Implants_Interventional_Materials sub Health_Medical;
+ Medical_Cryogenic_Equipments sub Health_Medical;
+ Physical_Therapy_Equipments sub Health_Medical;
+ Sterilization_Equipments sub Health_Medical;
+ Ultrasonic_Optical_Electronic_Equipment sub Health_Medical;
+ Medicines sub Health_Medical;
+ Veterinary_Medicine sub Health_Medical;
+ Plant_Extracts sub Health_Medical;
+ Health_Care_Supplement sub Health_Medical;
+ Crude_Medicine sub Health_Medical;
+ Traditional_Patented_Medicines sub Health_Medical;
+ n_Devices_Clinical_Analytical_Instruments sub Health_Medical;
+ Emergency_Clinics_Apparatuses sub Health_Medical;
+ General_Assay_Diagnostic_Apparatuses sub Health_Medical;
+ Medical_Consumable sub Health_Medical;
+ Medical_Software sub Health_Medical;
+ Radiology_Equipment_Accessories sub Health_Medical;
+ Surgical_Instrument sub Health_Medical;
+ Ward_Nursing_Equipments sub Health_Medical;
+ Veterinary_Instrument sub Health_Medical;
+
+
+ Beauty_Personal_Care sub Health_Beauty;
+
+ Baby_Care sub Beauty_Personal_Care;
+ Beauty_Equipment sub Beauty_Personal_Care;
+ Breast_Care sub Beauty_Personal_Care;
+ Fragrance_Deodorant sub Beauty_Personal_Care;
+ Hair_Extensions_Wigs sub Beauty_Personal_Care;
+ Makeup sub Beauty_Personal_Care;
+ Men_Care sub Beauty_Personal_Care;
+ Oral_Hygiene sub Beauty_Personal_Care;
+ Sanitary_Paper sub Beauty_Personal_Care;
+ Skin_Care sub Beauty_Personal_Care;
+ Spa_Supplies sub Beauty_Personal_Care;
+ Bath_Supplies sub Beauty_Personal_Care;
+ Body_Art sub Beauty_Personal_Care;
+ Feminine_Hygiene sub Beauty_Personal_Care;
+ Hair_Care sub Beauty_Personal_Care;
+ Hair_Salon_Equipment sub Beauty_Personal_Care;
+ Makeup_Tools sub Beauty_Personal_Care;
+ Nail_Supplies sub Beauty_Personal_Care;
+ Shaving_Hair_Removal sub Beauty_Personal_Care;
+ Skin_Care_Tool sub Beauty_Personal_Care;
+ Weight_Loss sub Beauty_Personal_Care;
+ Other_Beauty_Personal_Care_Products sub Beauty_Personal_Care;
+
+
+ Construction_Real_Estate sub Home_Lights_Construction;
+
+ Aluminum_Composite_Panels sub Construction_Real_Estate;
+ Bathroom sub Construction_Real_Estate;
+ Building_Glass sub Construction_Real_Estate;
+ Corner_Guards sub Construction_Real_Estate;
+ Curtain_Walls_Accessories sub Construction_Real_Estate;
+ Door_Window_Accessories sub Construction_Real_Estate;
+ Earthwork_Products sub Construction_Real_Estate;
+ Escalators_Escalator_Parts sub Construction_Real_Estate;
+ Fiberglass_Wall_Meshes sub Construction_Real_Estate;
+ Fireproofing_Materials sub Construction_Real_Estate;
+ Balustrades_Handrails sub Construction_Real_Estate;
+ Boards sub Construction_Real_Estate;
+ Ceilings sub Construction_Real_Estate;
+ Decorative_Films sub Construction_Real_Estate;
+ Doors_Windows sub Construction_Real_Estate;
+ Elevators_Elevator_Parts sub Construction_Real_Estate;
+ Faucets_Mixers_Taps sub Construction_Real_Estate;
+ Fireplaces_Stoves sub Construction_Real_Estate;
+ Floor_Heating_Systems_Parts sub Construction_Real_Estate;
+ Countertops_Vanity_Tops_Table_Tops sub Construction_Real_Estate;
+
+
+ Home_Garden sub Home_Lights_Construction;
+
+ Bakeware sub Home_Garden;
+ Bathroom_Products sub Home_Garden;
+ Cookware sub Home_Garden;
+ Home_Décor sub Home_Garden;
+ Household_Chemicals sub Home_Garden;
+ Household_Sundries sub Home_Garden;
+ Laundry_Products sub Home_Garden;
+ Tableware sub Home_Garden;
+ Drinkware sub Home_Garden;
+ Rain_Gear sub Home_Garden;
+ Barware sub Home_Garden;
+ Cooking_Tools sub Home_Garden;
+ Garden_Supplies sub Home_Garden;
+ Home_Storage_Organization sub Home_Garden;
+ Kitchen_Knives_Accessories sub Home_Garden;
+ Pet_Products sub Home_Garden;
+ Dinnerware sub Home_Garden;
+ Baby_Supplies_Products sub Home_Garden;
+ Lighters_Smoking_Accessories sub Home_Garden;
+ Household_Cleaning_Tools_Accessories sub Home_Garden;
+
+
+ Lights_Lighting sub Home_Lights_Construction;
+
+ Emergency_Lighting sub Lights_Lighting;
+ Indoor_Lighting sub Lights_Lighting;
+ Lighting_Accessories sub Lights_Lighting;
+ Other_Lights_Lighting_Products sub Lights_Lighting;
+ Professional_Lighting sub Lights_Lighting;
+ LED_Outdoor_Lighting sub Lights_Lighting;
+ Ceiling_Lights sub Lights_Lighting;
+ Stage_Lights sub Lights_Lighting;
+ Energy_Saving_Fluorescent sub Lights_Lighting;
+ LED_Professional_Lighting sub Lights_Lighting;
+ Holiday_Lighting sub Lights_Lighting;
+ LED_Lighting sub Lights_Lighting;
+ Lighting_Bulbs_Tubes sub Lights_Lighting;
+ Outdoor_Lighting sub Lights_Lighting;
+ LED_Residential_Lighting sub Lights_Lighting;
+ Chandeliers_Pendant_Lights sub Lights_Lighting;
+ Crystal_Lights sub Lights_Lighting;
+ Street_Lights sub Lights_Lighting;
+ LED_Landscape_Lamps sub Lights_Lighting;
+ LED_Encapsulation_Series sub Lights_Lighting;
+
+
+ Furniture sub Home_Lights_Construction;
+
+ Antique_Furniture sub Furniture;
+ Bamboo_Furniture sub Furniture;
+ Commercial_Furniture sub Furniture;
+ Furniture_Accessories sub Furniture;
+ Furniture_Parts sub Furniture;
+ Home_Furniture sub Furniture;
+ Metal_Furniture sub Furniture;
+ Outdoor_Furniture sub Furniture;
+ Rattan_Wicker_Furniture sub Furniture;
+ Living_Room_Furniture sub Furniture;
+ Baby_Furniture sub Furniture;
+ Children_Furniture sub Furniture;
+ Folding_Furniture sub Furniture;
+ Furniture_Hardware sub Furniture;
+ Glass_Furniture sub Furniture;
+ Inflatable_Furniture sub Furniture;
+ Other_Furniture sub Furniture;
+ Plastic_Furniture sub Furniture;
+ Wood_Furniture sub Furniture;
+ Bedroom_Furniture sub Furniture;
+
+
+ Machinery sub Machinery_IndustrialParts_Tools;
+
+ Building_Material_Machinery sub Machinery;
+ Electronic_Products_Machinery sub Machinery;
+ General_Industrial_Equipment sub Machinery;
+ Industry_Laser_Equipment sub Machinery;
+ Metal_Metallurgy_Machinery sub Machinery;
+ Packaging_Machine sub Machinery;
+ Pharmaceutical_Machinery sub Machinery;
+ Printing_Machine sub Machinery;
+ Used_Machinery_Equipment sub Machinery;
+ Agriculture_Machinery_Equipment sub Machinery;
+ Engineering_Construction_Machinery sub Machinery;
+ Apparel_Textile_Machinery sub Machinery;
+ Energy_Mineral_Equipment sub Machinery;
+ Food_Beverage_Machinery sub Machinery;
+ Machine_Tool_Equipment sub Machinery;
+ Paper_Production_Machinery sub Machinery;
+ Plastic_Rubber_Machinery sub Machinery;
+ Woodworking_Machinery sub Machinery;
+ Chemical_Machinery_Equipment sub Machinery;
+ Home_Product_Making_Machinery sub Machinery;
+ Other_Machinery_Industry_Equipment sub Machinery;
+ Refrigeration_Heat_Exchange_Equipment sub Machinery;
+
+
+ Fabrication_Services sub Machinery_IndustrialParts_Tools;
+
+ Custom_Fabrication_Services sub Fabrication_Services;
+ Machine_Tools_Accessory sub Fabrication_Services;
+ Industrial_Brake sub Fabrication_Services;
+ Moulds sub Fabrication_Services;
+ Other_Mechanical_Parts sub Fabrication_Services;
+ Coating_Services sub Fabrication_Services;
+ General_Mechanical_Components_Stock sub Fabrication_Services;
+ Other_General_Mechanical_Components sub Fabrication_Services;
+ Used_General_Mechanical_Components sub Fabrication_Services;
+ General_Mechanical_Components_Design_Services sub Fabrication_Services;
+
+
+ Tools_Hardware sub Machinery_IndustrialParts_Tools;
+
+ Hardware sub Tools_Hardware;
+ Garden_Tools sub Tools_Hardware;
+ Lifting_Tools sub Tools_Hardware;
+ Power_Tool_Accessories sub Tools_Hardware;
+ Tool_Design_Services sub Tools_Hardware;
+ Tool_Processing_Services sub Tools_Hardware;
+ Tool_Stock sub Tools_Hardware;
+ Used_Tools sub Tools_Hardware;
+ Knife sub Tools_Hardware;
+ Lawn_Mower sub Tools_Hardware;
+ Construction_Tools sub Tools_Hardware;
+ Hand_Tools sub Tools_Hardware;
+ Material_Handling_Tools sub Tools_Hardware;
+ Power_Tools sub Tools_Hardware;
+ Tool_Parts sub Tools_Hardware;
+ Tool_Sets sub Tools_Hardware;
+ Tools_Packaging sub Tools_Hardware;
+ Electric_Drill sub Tools_Hardware;
+ Hand_Carts_Trolleys sub Tools_Hardware;
+ Sander sub Tools_Hardware;
+
+
+ Minerals_Metallurgy sub Metallurgy_Chemicals_Rubber_Plastics;
+
+ Aluminum sub Minerals_Metallurgy;
+ Billets sub Minerals_Metallurgy;
+ Carbon_Fiber sub Minerals_Metallurgy;
+ Cemented_Carbide sub Minerals_Metallurgy;
+ Ceramics sub Minerals_Metallurgy;
+ Copper_Forged sub Minerals_Metallurgy;
+ Glass sub Minerals_Metallurgy;
+ Ingots sub Minerals_Metallurgy;
+ Lead sub Minerals_Metallurgy;
+ Magnetic_Materials sub Minerals_Metallurgy;
+ Metal_Slabs sub Minerals_Metallurgy;
+ Molybdenum sub Minerals_Metallurgy;
+ Non-Metallic_Mineral_Deposit sub Minerals_Metallurgy;
+ Other_Metals_Metal_Products sub Minerals_Metallurgy;
+ Pig_Iron sub Minerals_Metallurgy;
+ Rare_Earth_Products sub Minerals_Metallurgy;
+ Refractory sub Minerals_Metallurgy;
+ Titanium sub Minerals_Metallurgy;
+ Wire_Mesh sub Minerals_Metallurgy;
+ Barbed_Wire sub Minerals_Metallurgy;
+ Carbon sub Minerals_Metallurgy;
+ Cast_Forged sub Minerals_Metallurgy;
+ Ceramic_Fiber_Products sub Minerals_Metallurgy;
+ Copper sub Minerals_Metallurgy;
+ Fiberglass_Products sub Minerals_Metallurgy;
+ Graphite_Products sub Minerals_Metallurgy;
+ Iron sub Minerals_Metallurgy;
+ Lime sub Minerals_Metallurgy;
+ Metal_Scrap sub Minerals_Metallurgy;
+ Mineral_Wool sub Minerals_Metallurgy;
+ Nickel sub Minerals_Metallurgy;
+ Ore sub Minerals_Metallurgy;
+ Quartz_Products sub Minerals_Metallurgy;
+ Rare_Earth_Magnets sub Minerals_Metallurgy;
+ Steel sub Minerals_Metallurgy;
+ Tungsten sub Minerals_Metallurgy;
+ Other_Non-Metallic_Minerals_Products sub Minerals_Metallurgy;
+ Zinc sub Minerals_Metallurgy;
+
+
+ Chemicals sub Metallurgy_Chemicals_Rubber_Plastics;
+
+ Gas_Disposal sub Chemicals;
+ Other_Environmental_Products sub Chemicals;
+ Recycling sub Chemicals;
+ Waste_Management sub Chemicals;
+ Textile_Waste sub Chemicals;
+ Other_Recycling_Products sub Chemicals;
+ Noise_Reduction_Device sub Chemicals;
+ Other_Excess_Inventory sub Chemicals;
+ Sewer sub Chemicals;
+ Water_Treatment sub Chemicals;
+ Waste_Paper sub Chemicals;
+
+
+ Rubber_Plastics sub Metallurgy_Chemicals_Rubber_Plastics;
+
+ Plastic_Processing_Service sub Rubber_Plastics;
+ Plastic_Projects sub Rubber_Plastics;
+ Plastic_Stocks sub Rubber_Plastics;
+ Recycled_Rubber sub Rubber_Plastics;
+ Rubber_Products sub Rubber_Plastics;
+ Rubber_Raw_Materials sub Rubber_Plastics;
+ Plastic_Cards sub Rubber_Plastics;
+ Plastic_Tubes sub Rubber_Plastics;
+ Rubber_Hoses sub Rubber_Plastics;
+ LDPE sub Rubber_Plastics;
+ Plastic_Products sub Rubber_Plastics;
+ Plastic_Raw_Materials sub Rubber_Plastics;
+ Recycled_Plastic sub Rubber_Plastics;
+ Rubber_Processing_Service sub Rubber_Plastics;
+ Rubber_Projects sub Rubber_Plastics;
+ Rubber_Stocks sub Rubber_Plastics;
+ PVC sub Rubber_Plastics;
+ HDPE sub Rubber_Plastics;
+ Plastic_Sheets sub Rubber_Plastics;
+ Agricultural_Rubber sub Rubber_Plastics;
+
+
+ Energy sub Metallurgy_Chemicals_Rubber_Plastics;
+
+ Biodiesel sub Energy;
+ Charcoal sub Energy;
+ Coal_Gas sub Energy;
+ Crude_Oil sub Energy;
+ Petrochemical_Products sub Energy;
+ Industrial_Fuel sub Energy;
+ Other_Energy_Related_Products sub Energy;
+ Solar_Energy_Systems sub Energy;
+ Diesel_Fuel sub Energy;
+ Solar_Collectors sub Energy;
+ Biogas sub Energy;
+ Coal sub Energy;
+ Coke_Fuel sub Energy;
+ Electricity_Generation sub Energy;
+ Solar_Energy_Products sub Energy;
+ Natural_Gas sub Energy;
+ Wood_Pellets sub Energy;
+ Lubricant sub Energy;
+ Solar_Chargers sub Energy;
+ Bitumen sub Energy;
+
+
+ Packaging_Printing sub Packaging_Advertising_Office;
+
+ Adhesive_Tape sub Packaging_Printing;
+ Aluminum_Foil sub Packaging_Printing;
+ Blister_Cards sub Packaging_Printing;
+ Cans sub Packaging_Printing;
+ Composite_Packaging_Materials sub Packaging_Printing;
+ Electronics_Packaging sub Packaging_Printing;
+ Gift_Packaging sub Packaging_Printing;
+ Hot_Stamping_Foil sub Packaging_Printing;
+ Lids_Bottle_Caps_Closures sub Packaging_Printing;
+ Metallized_Film sub Packaging_Printing;
+ Other_Packaging_Materials sub Packaging_Printing;
+ Packaging_Boxes sub Packaging_Printing;
+ Packaging_Product_Stocks sub Packaging_Printing;
+ Packaging_Trays sub Packaging_Printing;
+ Paper_Paperboard sub Packaging_Printing;
+ Pharmaceutical_Packaging sub Packaging_Printing;
+ Plastic_Packaging sub Packaging_Printing;
+ Printing_Services sub Packaging_Printing;
+ Pulp sub Packaging_Printing;
+ Strapping sub Packaging_Printing;
+ Tobacco_Packaging sub Packaging_Printing;
+ Agricultural_Packaging sub Packaging_Printing;
+ Apparel_Packaging sub Packaging_Printing;
+ Bottles sub Packaging_Printing;
+ Chemical_Packaging sub Packaging_Printing;
+ Cosmetics_Packaging sub Packaging_Printing;
+ Food_Packaging sub Packaging_Printing;
+ Handles sub Packaging_Printing;
+ Jars sub Packaging_Printing;
+ Media_Packaging sub Packaging_Printing;
+ Other_Packaging_Applications sub Packaging_Printing;
+ Packaging_Bags sub Packaging_Printing;
+ Packaging_Labels sub Packaging_Printing;
+ Packaging_Rope sub Packaging_Printing;
+ Packaging_Tubes sub Packaging_Printing;
+ Paper_Packaging sub Packaging_Printing;
+ Plastic_Film sub Packaging_Printing;
+ Printing_Materials sub Packaging_Printing;
+ Protective_Packaging sub Packaging_Printing;
+ Shrink_Film sub Packaging_Printing;
+ Stretch_Film sub Packaging_Printing;
+ Transport_Packaging sub Packaging_Printing;
+
+
+ Office_School_Supplies sub Packaging_Advertising_Office;
+
+ Art_Supplies sub Office_School_Supplies;
+ Board sub Office_School_Supplies;
+ Book_Cover sub Office_School_Supplies;
+ Calculator sub Office_School_Supplies;
+ Clipboard sub Office_School_Supplies;
+ Desk_Organizer sub Office_School_Supplies;
+ Easels sub Office_School_Supplies;
+ Filing_Products sub Office_School_Supplies;
+ Magazines sub Office_School_Supplies;
+ Notebooks_Writing_Pads sub Office_School_Supplies;
+ Office_Binding_Supplies sub Office_School_Supplies;
+ Office_Equipment sub Office_School_Supplies;
+ Other_Office_School_Supplies sub Office_School_Supplies;
+ Pencil_Cases_Bags sub Office_School_Supplies;
+ Printer_Supplies sub Office_School_Supplies;
+ Stationery_Set sub Office_School_Supplies;
+ Writing_Accessories sub Office_School_Supplies;
+ Yellow_Pages sub Office_School_Supplies;
+ Badge_Holder_Accessories sub Office_School_Supplies;
+ Board_Eraser sub Office_School_Supplies;
+ Books sub Office_School_Supplies;
+ Calendar sub Office_School_Supplies;
+ Correction_Supplies sub Office_School_Supplies;
+ Drafting_Supplies sub Office_School_Supplies;
+ Educational_Supplies sub Office_School_Supplies;
+ Letter_Pad_Paper sub Office_School_Supplies;
+ Map sub Office_School_Supplies;
+ Office_Adhesives_Tapes sub Office_School_Supplies;
+ Office_Cutting_Supplies sub Office_School_Supplies;
+ Office_Paper sub Office_School_Supplies;
+ Paper_Envelopes sub Office_School_Supplies;
+ Pencil_Sharpeners sub Office_School_Supplies;
+ Stamps sub Office_School_Supplies;
+ Stencils sub Office_School_Supplies;
+ Writing_Instruments sub Office_School_Supplies;
+
+ Service_Equipment sub Packaging_Advertising_Office;
+
+ Advertising_Equipment sub Service_Equipment;
+ Commercial_Laundry_Equipment sub Service_Equipment;
+ Funeral_Supplies sub Service_Equipment;
+ Restaurant_Hotel_Supplies sub Service_Equipment;
+ Trade_Show_Equipment sub Service_Equipment;
+ Wedding_Supplies sub Service_Equipment;
+ Advertising_Players sub Service_Equipment;
+ Hotel_Amenities sub Service_Equipment;
+ Supermarket_Shelves sub Service_Equipment;
+ Refrigeration_Equipment sub Service_Equipment;
+ Cargo_Storage_Equipment sub Service_Equipment;
+ Financial_Equipment sub Service_Equipment;
+ Other_Service_Equipment sub Service_Equipment;
+ Store_Supermarket_Supplies sub Service_Equipment;
+ Vending_Machines sub Service_Equipment;
+ Display_Racks sub Service_Equipment;
+ Advertising_Light_Boxes sub Service_Equipment;
+ POS_Systems sub Service_Equipment;
+ Stacking_Racks_Shelves sub Service_Equipment;
+ Trade_Show_Tent sub Service_Equipment;
+
+
+  first_name sub attribute,
+	  datatype string;
+  last_name sub attribute,
+	  datatype string;
+  gender sub attribute,
+	  datatype string;
+  email sub attribute,
+	  datatype string;
+  phone sub attribute,
+	  datatype string;
+  location sub attribute,
+	  datatype string;
+  country sub attribute,
+	  datatype string;
+  address sub attribute,
+	  datatype string;
+  SN_ID sub attribute,
+	  datatype string;
+  name sub attribute,
+	  datatype string;
+  scope sub attribute,
+	  datatype string;
+  server sub attribute,
+	  datatype string;
+  host sub attribute,
+	  datatype string;
+  position sub attribute,
+	  datatype string;
+  request_date sub attribute,
+	  datatype string;
+  url sub attribute,
+	  datatype string;
+  product_id sub attribute,
+	  datatype string;
+  company_id sub attribute,
+	  datatype string;
+  person_id sub attribute,
+	  datatype string;
+  score sub attribute,
+	  datatype double;
