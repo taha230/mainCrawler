@@ -12,7 +12,6 @@ define
   plays employee,
   plays broker_product_owner,
   plays broker_seller,
-  plays broker_request_owner,
   plays broker_buyer;
 
 
@@ -27,7 +26,6 @@ define
   key company_id,
   plays company_product_owner,
   plays company_website_owner,
-  plays company_request_owner,
   plays employer;
 
  website sub entity,
@@ -45,9 +43,9 @@ define
  product sub entity,
   key product_id,
   has name,
+  has text,
+  has imageSrc,
   plays company_product,
-  plays company_request_product,
-  plays broker_request_product,
   plays broker_product;
 
  employ sub relation,
@@ -55,23 +53,14 @@ define
   relates employer,
   has position;
 
- company_request sub relation,
-  relates company_request_owner,
-  relates company_request_product,
-  has request_date;
-
- broker_request sub relation,
-  relates broker_request_owner,
-  relates broker_request_product,
-  has request_date;
-
  broker_relation sub relation,
   relates broker_seller,
   relates broker_buyer;
 
  product_broker_relation sub relation,
   relates broker_product_owner,
-  relates broker_product;
+  relates broker_product,
+  has seller_type;
 
  tag_relation sub relation,
   relates website_tag,
@@ -83,7 +72,8 @@ define
 
  product_company_relation sub relation,
   relates company_product_owner,
-  relates company_product;
+  relates company_product,
+  has seller_type;
 
 
  Agriculture_Food sub product;
@@ -966,7 +956,7 @@ define
 	  datatype string;
   position sub attribute,
 	  datatype string;
-  request_date sub attribute,
+  seller_type sub attribute,
 	  datatype string;
   url sub attribute,
 	  datatype string;
@@ -975,6 +965,10 @@ define
   company_id sub attribute,
 	  datatype string;
   person_id sub attribute,
+	  datatype string;
+  text sub attribute,
+	  datatype string;
+  imageSrc sub attribute,
 	  datatype string;
   score sub attribute,
 	  datatype double;
