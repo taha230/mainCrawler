@@ -1,2 +1,5 @@
 .idea/
 __pycache__/
+/KnowledgeGraph/go4w/crawl-300d-2M.vec_wiki_lg/
+/KnowledgeGraph/go4w/crawl-300d-2M-subword_wiki_lg/
+/KnowledgeGraph/go4w/go4w_missedProduct.json
