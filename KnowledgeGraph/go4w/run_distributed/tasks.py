@@ -1,10 +1,15 @@
-
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import json
+import multiprocessing
+import requests
+from random import randint
 import urllib
-import re
 from bs4 import BeautifulSoup
-from jsonmerge import merge
+import random
+from run_distributed.celery import app
+import time
+import json
+
 from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
         ConnectionRefusedError, ConnectionDone, ConnectError, \
@@ -26,15 +31,12 @@ import spacy
 import time
 import os.path
 
-
-
 ##################################################
 ##################################################
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
     'Content-Type': 'text/html',
 }
-
 
 EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
                            ConnectionRefusedError, ConnectionDone, ConnectError,
@@ -423,6 +425,7 @@ def getSimilarCategory (productName):
     f = open(os.path.dirname(__file__) + '/../Product_Categories.txt', "r")  # read from parent directory
     categories = f.read().split('\n')
 
+
     mostSimilarIndex = 0
     mostSimilarityValue =0
     for i in range(len(categories)):
@@ -503,7 +506,7 @@ def insertProductToKG (request, company_id, person_id, company_selected, broker_
 
 
 ######################################################################################################
-
+@app.task
 def write_db_KG(startIndex, endIndex , prrocessNum):
     '''
     function_name: write_db_KG
@@ -605,42 +608,8 @@ def chunkIt(seq, num):
 
 
 
-clientMongo = MongoClient('192.168.1.117', 27017, connect=False)
-db = clientMongo['CrawlingData']
-collection_go4w_data = db['go4w_data']
-DBTotalCount = collection_go4w_data.count()
-clientMongo.close()
 
 
-client = GraknClient(uri="localhost:48555")
-session = client.session(keyspace="mineral")
-transaction = session.transaction().write()
-
-graql_delete_query = "match $x isa company; delete  $x;"
-transaction.query(graql_delete_query)
-transaction.commit()
-
-#write_result_db()
-#write_db_KG(1,DBTotalCount)
-client.close()
-
-number_processes = 5
-processes = []
-countEachProcess = DBTotalCount / number_processes
-
-for i in range(number_processes):
-    processes.append(multiprocessing.Process(target=write_db_KG, args=[round(i * countEachProcess), round((i+1)* countEachProcess) -1 , i+1]))
-    # break
-
-for p in processes:
-    p.start()
-    # break
-
-for p in processes:
-    p.join()
-    # break
 
 
-#f.close()
-#f_missed.close()
 
