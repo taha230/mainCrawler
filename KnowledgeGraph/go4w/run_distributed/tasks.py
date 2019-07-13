@@ -30,6 +30,10 @@ import pymongo
 import spacy
 import time
 import os.path
+from .run_tasks import categories
+from .run_tasks import nlp
+from .run_tasks import f_missed
+
 
 ##################################################
 ##################################################
@@ -417,15 +421,6 @@ def getSimilarCategory (productName):
     category according to the learned model
     '''
 
-    # nlp = spacy.load("crawl-300d-2M.vec_wiki_lg")
-    nlp = spacy.load("crawl-300d-2M-subword_wiki_lg")
-
-    categories = []
-
-    f = open(os.path.dirname(__file__) + '/../Product_Categories.txt', "r")  # read from parent directory
-    categories = f.read().split('\n')
-
-
     mostSimilarIndex = 0
     mostSimilarityValue =0
     for i in range(len(categories)):
@@ -455,9 +450,6 @@ def insertProductToKG (request, company_id, person_id, company_selected, broker_
     description: insert new request for prodcutList in the grakn knowledge graph (product table)
     '''
 
-    f_missed = open('go4w_missedProduct.json', 'w')
-    f_missed.close()  # to erase the previous result
-    f_missed = open('go4w_missedProduct.json', 'a')
 
     for product in request['productList']:
 

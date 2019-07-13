@@ -35,7 +35,6 @@ headers = {
     'Content-Type': 'text/html',
 }
 
-
 EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
                            ConnectionRefusedError, ConnectionDone, ConnectError,
                            ConnectionLost, TCPTimedOutError, ResponseFailed,
@@ -415,13 +414,6 @@ def getSimilarCategory (productName):
     category according to the learned model
     '''
 
-    # nlp = spacy.load("crawl-300d-2M.vec_wiki_lg")
-    nlp = spacy.load("crawl-300d-2M-subword_wiki_lg")
-
-    categories = []
-
-    f = open(os.path.dirname(__file__) + '/../Product_Categories.txt', "r")  # read from parent directory
-    categories = f.read().split('\n')
 
     mostSimilarIndex = 0
     mostSimilarityValue =0
@@ -452,9 +444,7 @@ def insertProductToKG (request, company_id, person_id, company_selected, broker_
     description: insert new request for prodcutList in the grakn knowledge graph (product table)
     '''
 
-    f_missed = open('go4w_missedProduct.json', 'w')
-    f_missed.close()  # to erase the previous result
-    f_missed = open('go4w_missedProduct.json', 'a')
+
 
     for product in request['productList']:
 
@@ -603,9 +593,21 @@ def chunkIt(seq, num):
 
 ##################################################
 
+# nlp = spacy.load("crawl-300d-2M.vec_wiki_lg")
+nlp = spacy.load("crawl-300d-2M-subword_wiki_lg")
+
+categories = []
+
+f = open(os.path.dirname(__file__) + '/../Product_Categories.txt', "r")  # read from parent directory
+categories = f.read().split('\n')
+
+f_missed = open('go4w_missedProduct.json', 'w')
+f_missed.close()  # to erase the previous result
+f_missed = open('go4w_missedProduct.json', 'a')
 
 
 clientMongo = MongoClient('192.168.1.117', 27017, connect=False)
+#client = MongoClient('192.168.1.117', 27017, connect=False, username='taha', password='6141', authSource='CrawlingData')
 db = clientMongo['CrawlingData']
 collection_go4w_data = db['go4w_data']
 DBTotalCount = collection_go4w_data.count()
@@ -621,7 +623,7 @@ transaction.query(graql_delete_query)
 transaction.commit()
 
 #write_result_db()
-#write_db_KG(1,DBTotalCount)
+#write_db_KG(1,DBTotalCount,1)
 client.close()
 
 number_processes = 5
@@ -641,6 +643,6 @@ for p in processes:
     # break
 
 
-#f.close()
-#f_missed.close()
+f.close()
+f_missed.close()
 

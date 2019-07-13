@@ -1,11 +1,26 @@
 from .tasks import write_db_KG
 from pymongo import MongoClient
 from grakn.client import GraknClient
+import spacy
+import os.path
+
+
 import time
 from celery.result import ResultBase
 ##########################################
 ##########################################
 if __name__ == '__main__':
+
+    categories = []
+
+    f = open(os.path.dirname(__file__) + '/../Product_Categories.txt', "r")  # read from parent directory
+    categories = f.read().split('\n')
+    # nlp = spacy.load("crawl-300d-2M.vec_wiki_lg")
+    nlp = spacy.load("crawl-300d-2M-subword_wiki_lg")
+
+    f_missed = open('go4w_missedProduct.json', 'w')
+    f_missed.close()  # to erase the previous result
+    f_missed = open('go4w_missedProduct.json', 'a')
 
     clientMongo = MongoClient('192.168.1.117', 27017, connect=False)
     db = clientMongo['CrawlingData']
@@ -27,6 +42,5 @@ if __name__ == '__main__':
 
 
 
-
-
-    #ff.close()
+    f.close()
+    f_missed.close()
