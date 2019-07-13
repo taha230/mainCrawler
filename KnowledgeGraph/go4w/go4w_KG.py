@@ -22,6 +22,10 @@ import sys
 sys.path.append("..")  # Adds higher directory to python modules path.
 from unique_key import get_unique_key
 import pymongo
+import spacy
+import time
+import os.path
+
 
 
 ##################################################
@@ -42,7 +46,7 @@ def write_result_db():
     '''
 
     #Connect to MongoDB
-    client = MongoClient('localhost', 27017)
+    client = MongoClient('192.168.1.117', 27017)
     db = client['CrawlingData']
     collection_go4w_data = db['go4w_data']
     collection_go4w_data.delete_many({})  # Delete all documents in collection
@@ -118,12 +122,14 @@ def insertCompanyToKG_Buyer(id , request):
     graql_insert_query += ", has country '" + clean_text(request["buyerCountry"]) + "'"
     graql_insert_query += ", has name '" + clean_text(request["buyerCompanyName"]) + "'"
 
+    if ('Contact_Details' in request and requests['Contact Details'] != ""):
+        graql_insert_query += ", has address '" + clean_text(requests['Contact_Details']) + "'"
 
     for item in request:
         if ('_id' in item or 'buyerCompanyName' in item or 'date' in item
                 or 'buyerProductName' in item or 'buyerCountry' in item
                 or 'buyerText' in item or 'buyerCompanyLink' in item
-                or 'Key' in item or 'searchCategory' in item
+                or 'Key' in item or 'searchCategory' in item or 'Contact Details' in item
                 or request[item] == "" or item[0].isdigit() or 'productList' in item
         ):
             continue
@@ -132,9 +138,9 @@ def insertCompanyToKG_Buyer(id , request):
 
             try:
 
-                item_clean = clean_text(str(item)).replace(',', ' ').replace(')', ' ').replace('(', ' ').replace(' ',
-                                                                                                                 '_')
+                item_clean = clean_text(str(item)).replace(',', ' ').replace(')', ' ').replace('(', ' ').replace(' ','_')
                 value_clean = clean_text(str(request[item]))
+
                 # print(item_clean)
                 # print('value: ' + value_clean)
 
@@ -145,10 +151,8 @@ def insertCompanyToKG_Buyer(id , request):
                 transaction.query(
                     'define ' + item_clean + ' sub attribute, datatype string; company sub entity, has ' + item_clean + ';');
                 transaction.commit();
+                client.close()
 
-                # if ('Contact_Details' in item_clean ):
-                #     graql_insert_query += ", has address '" + value_clean + "'"
-                # else:
 
                 graql_insert_query += ", has " + item_clean + " '" + value_clean + "'"
 
@@ -157,13 +161,19 @@ def insertCompanyToKG_Buyer(id , request):
 
     graql_insert_query += ";"
 
-    client = GraknClient(uri="localhost:48555")
-    session = client.session(keyspace="mineral")
-    transaction = session.transaction().write()
+    try:
 
-    transaction.query(graql_insert_query)
-    transaction.commit()
-    print("Executed company Buyer insert Query: " + str(request["date"]))
+        client = GraknClient(uri="localhost:48555")
+        session = client.session(keyspace="mineral")
+        transaction = session.transaction().write()
+
+        transaction.query(graql_insert_query)
+        transaction.commit()
+        client.close()
+
+        # print("Executed company Buyer insert Query: " + str(request["date"]))
+    except:
+        print("exception in adding new company query buyer attribute and handled")
 
 ######################################################################################################
 
@@ -180,11 +190,14 @@ def insertCompanyToKG_Supplier(id , request):
     graql_insert_query += ", has country '" + clean_text(request["supplierCountry"]) + "'"
     graql_insert_query += ", has name '" + clean_text(request["supplierCompanyName"]) + "'"
 
+    if ('Contact_Details' in request and requests['Contact Details'] != ""):
+        graql_insert_query += ", has address '" + clean_text(requests['Contact_Details']) + "'"
+
     for item in request:
         if ('_id' in item or 'supplierCompanyName' in item or 'date' in item
                 or 'supplierCountry' in item
                 or 'supplierText' in item or 'supplierCompanyLink' in item
-                or 'Key' in item or 'searchCategory' in item
+                or 'Key' in item or 'searchCategory' in item or 'Contact Details' in item
                 or request[item] == "" or item[0].isdigit() or 'productList' in item
         ):
             continue
@@ -207,10 +220,6 @@ def insertCompanyToKG_Supplier(id , request):
                     'define ' + item_clean + ' sub attribute, datatype string; company sub entity, has ' + item_clean + ';');
                 transaction.commit();
 
-                # if ('Contact_Details' in item_clean ):
-                #     graql_insert_query += ", has address '" + value_clean + "'"
-                # else:
-
                 graql_insert_query += ", has " + item_clean + " '" + value_clean + "'"
 
 
@@ -219,13 +228,17 @@ def insertCompanyToKG_Supplier(id , request):
 
     graql_insert_query += ";"
 
-    client = GraknClient(uri="localhost:48555")
-    session = client.session(keyspace="mineral")
-    transaction = session.transaction().write()
+    try:
 
-    transaction.query(graql_insert_query)
-    transaction.commit()
-    print("Executed company Supplier insert Query: " + str(request["date"]))
+        client = GraknClient(uri="localhost:48555")
+        session = client.session(keyspace="mineral")
+        transaction = session.transaction().write()
+
+        transaction.query(graql_insert_query)
+        transaction.commit()
+      # print("Executed company Supplier insert Query: " + str(request["date"]))
+    except:
+        print("exception in adding new company query supplier attribute and handled")
 
 ######################################################################################################
 
@@ -270,7 +283,7 @@ def insertPersonToKG (id , request):
 
         transaction.query(graql_insert_query)
         transaction.commit()
-        print("Executed person insert Query: " + str(request["date"]))
+        # print("Executed person insert Query: " + str(request["date"]))
 
     if ('Contact' in request and  request['Contact'] != ""):
 
@@ -298,11 +311,11 @@ def insertPersonToKG (id , request):
 
         transaction.query(graql_insert_query)
         transaction.commit()
-        print("Executed person insert Query: " + str(request["date"]))
+        # print("Executed person insert Query: " + str(request["date"]))
 
 ######################################################################################################
 
-def insert_product_company_relation (company_id , product_id, type):
+def insert_product_company_relation (company_id , product_id, type , productInstance):
 
     '''
     function_name: insert_product_company_relation
@@ -325,11 +338,11 @@ def insert_product_company_relation (company_id , product_id, type):
 
     transaction.query(graql_insert_query)
     transaction.commit()
-    print("Executed person insert Query to product_company_relation with Company_id : " + company_id + " Product_id :" + product_id)
+    # print("Executed person insert Query to product_company_relation with Company_id : " + company_id + " Product_id :" + product_id)
 
 ######################################################################################################
 
-def insert_product_broker_relation (person_id , product_id ,type):
+def insert_product_broker_relation (person_id , product_id ,type, productInstance):
 
     '''
     function_name: insert_product_broker_relation
@@ -352,7 +365,9 @@ def insert_product_broker_relation (person_id , product_id ,type):
 
     transaction.query(graql_insert_query)
     transaction.commit()
-    print("Executed broker insert Query to product_broker_relation with person_id : " + person_id + " Product_id :" + product_id)
+    client.close()
+
+    # print("Executed broker insert Query to product_broker_relation with person_id : " + person_id + " Product_id :" + product_id)
 
 ######################################################################################################
 
@@ -378,7 +393,39 @@ def insertEmployToKG (company_id , person_id):
 
     transaction.query(graql_insert_query)
     transaction.commit()
-    print("Executed employ insert Query to employ with person_id : " + person_id + " company_id :" + company_id)
+    client.close()
+
+    # print("Executed employ insert Query to employ with person_id : " + person_id + " company_id :" + company_id)
+
+######################################################################################################
+
+def getSimilarCategory (productName):
+
+    '''
+    function_name: getSimilarCategory
+    input: productName
+    output: Product Category
+    description: compare the input product name with pre-defined categories and returns the most similar
+    category according to the learned model
+    '''
+
+    mostSimilarIndex = 0
+    mostSimilarityValue =0
+    for i in range(len(categories)):
+        categoryText = categories[i].replace('_', ' ')
+        if (categoryText == ""): continue
+
+        doc1 = nlp(categoryText)
+        doc2 = nlp(productName)
+        similarity = doc1.similarity(doc2)
+        if (similarity > mostSimilarityValue):
+            mostSimilarityValue = similarity
+            mostSimilarIndex = i
+
+
+    # print ("Product Name :" + productName + " similar Category: " + categories[mostSimilarIndex])
+
+    return categories[mostSimilarIndex], mostSimilarityValue
 
 ######################################################################################################
 
@@ -392,40 +439,54 @@ def insertProductToKG (request, company_id, person_id, company_selected, broker_
     '''
 
     for product in request['productList']:
-        id = get_unique_key()
 
-        graql_insert_query = "insert $product isa product, has product_id '" + id + "'"
-        if ('productName' in product and product['productName'] != ""):
-            graql_insert_query += ", has name '" + clean_text(product['productName']) + "'"
-        if ('productText' in product and product['productText'] != ""):
-            graql_insert_query += ", has text '" + clean_text(product['productText']) + "'"
-        if ('ProductImageSrc' in product and product['ProductImageSrc'] != ""):
-            graql_insert_query += ", has imageSrc '" + product['ProductImageSrc'] + "'"
+        if ('productName' not in product or product['productName'] == ""): continue
 
-        graql_insert_query += ";"
+        productInstance , similarity = getSimilarCategory(product['productName'])
 
-        client = GraknClient(uri="localhost:48555")
-        session = client.session(keyspace="mineral")
-        transaction = session.transaction().write()
+        if similarity == 0:
+            missed_productCategoryJson = {
+                'missedProductName' : product['productName'],
+                'request':  str(request)
+            }
+            f_missed.write(json.dumps(missed_productCategoryJson))
+            f_missed.write('\n')
 
-        transaction.query(graql_insert_query)
-        transaction.commit()
+        else :
+            id = get_unique_key()
 
+            graql_insert_query = "insert $product isa "+productInstance+", has product_id '" + id + "'"
+            if ('productName' in product and product['productName'] != ""):
+                graql_insert_query += ", has name '" + clean_text(product['productName']) + "'"
+            if ('productText' in product and product['productText'] != ""):
+                graql_insert_query += ", has text '" + clean_text(product['productText']) + "'"
+            if ('ProductImageSrc' in product and product['ProductImageSrc'] != ""):
+                graql_insert_query += ", has imageSrc '" + product['ProductImageSrc'] + "'"
 
-        print("Executed person insert Query: " + str(request["date"]))
+            graql_insert_query += ";"
 
-        if (company_selected):
-            # insert to product_company_relation table
-            insert_product_company_relation(company_id , id , type)
+            client = GraknClient(uri="localhost:48555")
+            session = client.session(keyspace="mineral")
+            transaction = session.transaction().write()
 
-        elif (broker_selected):
-            # insert to product_company_relation table
-            insert_product_broker_relation(person_id , id, type)
+            transaction.query(graql_insert_query)
+            transaction.commit()
+            client.close()
+
+            # print("Executed person insert Query: " + str(request["date"]))
+
+            if (company_selected):
+                # insert to product_company_relation table
+                insert_product_company_relation(company_id , id , type , productInstance)
+
+            elif (broker_selected):
+                # insert to product_company_relation table
+                insert_product_broker_relation(person_id , id, type , productInstance)
 
 
 ######################################################################################################
 
-def write_db_KG():
+def write_db_KG(startIndex, endIndex , prrocessNum):
     '''
     function_name: write_db_KG
     input: none
@@ -437,26 +498,21 @@ def write_db_KG():
 
     processed = 1
 
-    client = GraknClient(uri="localhost:48555")
-    session = client.session(keyspace="mineral")
-    transaction = session.transaction().write()
+    clientMongo = MongoClient('192.168.1.117', 27017, connect=False)
+    db = clientMongo['CrawlingData']
+    collection_go4w_data = db['go4w_data']
 
-    graql_delete_query = "match $x isa company; delete  $x;"
-    transaction.query(graql_delete_query)
-    transaction.commit()
 
     while True:
-        client = MongoClient('localhost', 27017)
-        db = client['CrawlingData']
-        collection_go4w_data = db['go4w_data']
-        requests = collection_go4w_data.find(no_cursor_timeout=True).skip(processed)
 
-
+        requests = collection_go4w_data.find()[startIndex:endIndex]
         # Insert to Grakn.ai Knowledge Graph
 
         try:
             for request in requests:
 
+
+                # print(request['date'])
                 if (request['date'] == "" ): continue
 
                 company_id = get_unique_key()
@@ -492,8 +548,9 @@ def write_db_KG():
                     insertEmployToKG(company_id, person_id)
 
 
-                print ('>>>>>>>>>>>>>>> processed : ' + str(processed) + ' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+                print ('>>>>>>>>>>>>>>> process ' + str(prrocessNum) +' : ' + str(processed) + ' / '+ str (endIndex - startIndex) +' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
                 processed += 1
+
 
 
             requests.close()
@@ -536,6 +593,56 @@ EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
                            IOError, TunnelError)
 
 
+#nlp = spacy.load("crawl-300d-2M.vec_wiki_lg")
+nlp = spacy.load("crawl-300d-2M-subword_wiki_lg")
+
+categories = []
+
+f = open(os.path.dirname(__file__) + '/../Product_Categories.txt', "r") # read from parent directory
+categories = f.read().split('\n')
+
+f_missed = open('go4w_missedProduct.json','w')
+f_missed.close() # to erase the previous result
+f_missed = open('go4w_missedProduct.json','a')
+
+
+clientMongo = MongoClient('192.168.1.117', 27017, connect=False)
+#client = MongoClient('192.168.1.117', 27017, connect=False, username='taha', password='6141', authSource='CrawlingData')
+db = clientMongo['CrawlingData']
+collection_go4w_data = db['go4w_data']
+DBTotalCount = collection_go4w_data.count()
+clientMongo.close()
+
+
+client = GraknClient(uri="localhost:48555")
+session = client.session(keyspace="mineral")
+transaction = session.transaction().write()
+
+graql_delete_query = "match $x isa company; delete  $x;"
+transaction.query(graql_delete_query)
+transaction.commit()
+
 #write_result_db()
-write_db_KG()
+#write_db_KG(1,DBTotalCount)
+client.close()
+
+number_processes = 5
+processes = []
+countEachProcess = DBTotalCount / number_processes
+
+for i in range(number_processes):
+    processes.append(multiprocessing.Process(target=write_db_KG, args=[round(i * countEachProcess), round((i+1)* countEachProcess) -1 , i+1]))
+    # break
+
+for p in processes:
+    p.start()
+    # break
+
+for p in processes:
+    p.join()
+    # break
+
+
+f.close()
+f_missed.close()
 

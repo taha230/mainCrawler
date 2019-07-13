@@ -96,15 +96,15 @@ define
  Coffee_Beans sub Agriculture;
  Feed sub Agriculture;
  Fruit sub Agriculture;
- HerbalCigars_Cigarettes sub Agriculture;
+ Herbal_Cigars_Cigarettes sub Agriculture;
  Nuts_Kernels sub Agriculture;
  Ornamental_Plants sub Agriculture;
- Plant_AnimalOil sub Agriculture;
- TimberRawMaterials sub Agriculture;
+ Plant_Animal_Oil sub Agriculture;
+ Timber_Raw_Materials sub Agriculture;
  Vegetables sub Agriculture;
  Animal_Products sub Agriculture;
- FarmMachinery_Equipment sub Agriculture;
- CocoaBeans sub Agriculture;
+ Farm_Machinery_Equipment sub Agriculture;
+ Cocoa_Beans sub Agriculture;
  Fresh_Seafood sub Agriculture;
  Grain sub Agriculture;
  Mushrooms_Truffles sub Agriculture;
@@ -157,11 +157,11 @@ define
  Ethnic_Clothing sub Apparel;
  Girls_Clothing sub Apparel;
  Mannequins sub Apparel;
- Mens_Clothing sub Apparel;
+ Men_Clothing sub Apparel;
  Sportswear sub Apparel;
  Tag_Guns sub Apparel;
  Used_Clothes sub Apparel;
- Womens_Clothing sub Apparel;
+ Women_Clothing sub Apparel;
 
  Textile_Leather_Product sub Apparel_Textiles_Accessories;
 
@@ -248,7 +248,7 @@ define
  Truck_Parts_Accessories sub Vehicles_Accessories;
  Motorcycles_Scooters sub Vehicles_Accessories;
  Emergency_Vehicles sub Vehicles_Accessories;
- ATVs_UTVs sub Vehicles_Accessories;
+ All_Terrain_Vehicle_Ultimate_Terrain_Vehicle sub Vehicles_Accessories;
  Containers sub Vehicles_Accessories;
  Other_Vehicles sub Vehicles_Accessories;
 
@@ -280,20 +280,20 @@ define
 
  Baby_Shoes sub Shoes_Accessories;
  Dance_Shoes sub Shoes_Accessories;
- Mens_Shoes sub Shoes_Accessories;
+ Men_Shoes sub Shoes_Accessories;
  Shoe_Materials sub Shoes_Accessories;
  Shoe_Repairing_Equipment sub Shoes_Accessories;
  Shoes_Processing_Services sub Shoes_Accessories;
  Special_Purpose_Shoes sub Shoes_Accessories;
  Used_Shoes sub Shoes_Accessories;
- Childrens_Shoes sub Shoes_Accessories;
+ Children_Shoes sub Shoes_Accessories;
  Genuine_Leather_Shoes sub Shoes_Accessories;
  Other_Shoes sub Shoes_Accessories;
  Shoe_Parts_Accessories sub Shoes_Accessories;
  Shoes_Design_Services sub Shoes_Accessories;
  Shoes_Stock sub Shoes_Accessories;
  Sports_Shoes sub Shoes_Accessories;
- Womens_Shoes sub Shoes_Accessories;
+ Women_Shoes sub Shoes_Accessories;
 
 
  Consumer_Electronic sub Electronics;
@@ -584,7 +584,7 @@ define
  Bakeware sub Home_Garden;
  Bathroom_Products sub Home_Garden;
  Cookware sub Home_Garden;
- Home_Décor sub Home_Garden;
+ Home_Decor sub Home_Garden;
  Household_Chemicals sub Home_Garden;
  Household_Sundries sub Home_Garden;
  Laundry_Products sub Home_Garden;
@@ -783,15 +783,15 @@ define
  Plastic_Cards sub Rubber_Plastics;
  Plastic_Tubes sub Rubber_Plastics;
  Rubber_Hoses sub Rubber_Plastics;
- LDPE sub Rubber_Plastics;
+ Low_Density_Polyethylen sub Rubber_Plastics;
  Plastic_Products sub Rubber_Plastics;
  Plastic_Raw_Materials sub Rubber_Plastics;
  Recycled_Plastic sub Rubber_Plastics;
  Rubber_Processing_Service sub Rubber_Plastics;
  Rubber_Projects sub Rubber_Plastics;
  Rubber_Stocks sub Rubber_Plastics;
- PVC sub Rubber_Plastics;
- HDPE sub Rubber_Plastics;
+ Polyvinyl_Chloride sub Rubber_Plastics;
+ High_density_polyethylene sub Rubber_Plastics;
  Plastic_Sheets sub Rubber_Plastics;
  Agricultural_Rubber sub Rubber_Plastics;
 
@@ -923,7 +923,7 @@ define
  Vending_Machines sub Service_Equipment;
  Display_Racks sub Service_Equipment;
  Advertising_Light_Boxes sub Service_Equipment;
- POS_Systems sub Service_Equipment;
+ Point_Of_Sale_Systems sub Service_Equipment;
  Stacking_Racks_Shelves sub Service_Equipment;
  Trade_Show_Tent sub Service_Equipment;
 
