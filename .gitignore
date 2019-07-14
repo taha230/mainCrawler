@@ -1,5 +1,11 @@
 .idea/
 __pycache__/
+/go4w/files/
+/ecplaza/files/ecplaza_all_links.txt
+/ecvv/run_distributed/all_product_links.txt
+/ecvv/all_product_links.txt
+/ecvv/all_pages_links.txt
+/madeInChina/madeInChina_product_pages.txt
 /KnowledgeGraph/go4w/crawl-300d-2M.vec_wiki_lg/
 /KnowledgeGraph/go4w/crawl-300d-2M-subword_wiki_lg/
 /KnowledgeGraph/go4w/go4w_missedProduct.json
