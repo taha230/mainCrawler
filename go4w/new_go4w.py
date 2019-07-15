@@ -159,6 +159,15 @@ def clean_backslashN_array(inputArray):
 
     return outArray
 ####################################################################################################################
+def clean_rn_text(text):
+    '''
+    function_name: clean_rn_text
+    input: string
+    output: string
+    description: remove all \r and \n from text
+    '''
+    return ' '.join(text.replace('\n', ' ').replace('\r',' ').split())
+####################################################################################################################
 def tokenize_text(txt):
     '''
     function_name: tokenize_text
@@ -234,41 +243,96 @@ def get_data_from_html(tokens, name_part):
     output: json
     description: extract data from html using html comment tags
     '''
+
     data = {}
-    for i in range(0, len(tokens)):
-        if tokens[i].strip().replace(' ', '') == '<!--Title-->':
-            data[name_part + '_' + 'title'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
-            continue
+    ###############################################################################################
+    #############Company###########################################################################
+    if name_part == 'Company' or name_part == 'Our Company':
+        for i in range(0, len(tokens)):
+            if tokens[i].strip().replace(' ', '') == '<!--Title-->':
+                data[name_part + '_' + 'title'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+                continue
 
-        if tokens[i].strip().replace(' ', '') == '<!--Country-->':
-            data[name_part + '_' + 'country'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip().split('From')[
-                -1]
-            continue
+            if tokens[i].strip().replace(' ', '') == '<!--Country-->':
+                data[name_part + '_' + 'country'] = ' '.join(BeautifulSoup(tokens[i + 1], 'html.parser').text.strip().split('From')[-1].replace('\n','').strip().split(' '))
+                continue
 
-        if tokens[i].strip().replace(' ', '') == '<!--Date-->':
-            data[name_part + '_' + 'date'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
-            continue
+            if tokens[i].strip().replace(' ', '') == '<!--Date-->':
+                data[name_part + '_' + 'date'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+                continue
 
-        if tokens[i].strip().replace(' ', '') == '<!--Description-->':
-            keys = tokens[i + 1].split('<b>')
+            if tokens[i].strip().replace(' ', '') == '<!--Description-->':
+                keys = tokens[i + 1].split('<b>')
+                temp = {}
+                if len(keys)>1:
+                    for k in keys:
+                        k_ = k.split('</b>')
+                        if len(k_) == 2:
+                            key = k_[0].replace(':', '').strip()
+                            value = clean_rn_text(BeautifulSoup(k_[1].replace(':', '').strip(), 'html.parser').text)
 
-            for k in keys:
-                k_ = k.split('</b>')
-                if len(k_) == 2:
-                    key = k_[0].replace(':', '').strip()
-                    value = ' '.join(
-                        BeautifulSoup(k_[1].replace(':', '').strip(), 'html.parser').text.replace('\n', '').split())
+                            temp[key] = value
+                    data[name_part] = temp
+                else:
+                    keys = BeautifulSoup(tokens[i+1], 'html.parser').text.split('\r\n')
+                    temp = {}
+                    for k in keys:
+                        k_ = k.split(':')
+                        if(len(k_) > 1):
+                            temp[k_[0].strip()] = k_[1].strip()
+                    data[name_part] = temp
+            if tokens[i].strip().replace(' ', '') == '<!--CategoryStub-->':
+                cats = BeautifulSoup(tokens[i + 1], 'html.parser').find_all('a')
+                if (len(cats) > 0):
+                    cats = [c.text for c in cats]
+                    data[name_part + '_' + 'categories'] = cats
+    ###############################################################################################
+    #############Products##########################################################################
+    if name_part == 'Products':
+        product_list = []
+        temp = {}
+        pass_title = False
+        for i in range(0, len(tokens)):
+            if tokens[i].strip().replace(' ', '') == '<!--Title-->':
+                if pass_title:
+                    t_ = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip().split('\n')
+                    t_ = [t.strip() for t in t_ if len(t)>0]
+                    temp['title'] = t_[0].strip()
+                    temp['date'] = t_[1].strip()
+                    continue
+                else:
+                    pass_title = True
+                    continue
 
-                    data[name_part + '_' + key] = value
+            if tokens[i].strip().replace(' ', '') == '<!--Description-->':
+                keys = BeautifulSoup(tokens[i + 1], 'html.parser').text.split('\r\n')
+                for k in keys:
+                    k_ = k.split(':')
+                    if (len(k_) > 1):
+                        temp[k_[0].strip()] = k_[1].strip()
+                if 'title' in temp:
+                    product_list.append(temp)
+                    temp = {}
 
-        if tokens[i].strip().replace(' ', '') == '<!--CategoryStub-->':
-            cats = BeautifulSoup(tokens[i + 1], 'html.parser').find_all('a')
-            if (len(cats) > 0):
-                cats = [c.text.replace('Supplier Of', '').replace('Buyer Of', '').strip() for c in cats]
+        data[name_part] = product_list
+        ###############################################################################################
+        #############Products##########################################################################
+        if name_part == 'Management':
+            temp = {}
+            for i in range(0, len(tokens)):
+                if tokens[i].strip().replace(' ', '') == '<!--Description-->':
+                    keys = BeautifulSoup(tokens[i + 1], 'html.parser').text.split('\r\n')
+                    for k in keys:
+                        k_ = k.split(':')
+                        if (len(k_) > 1):
+                            temp[k_[0].strip()] = k_[1].strip()
+                    if 'title' in temp:
+                        product_list.append(temp)
+                        temp = {}
 
-            data[name_part + '_' + 'categories'] = cats
+            data[name_part] = product_list
 
-        return data
+    return data
 #####################################################################################################################
 def product_parse(url):
     '''
@@ -281,7 +345,7 @@ def product_parse(url):
     json_url = json.loads(url.replace("\'","\""))
 
     url = json_url['url']
-
+    url = 'https://www.go4worldbusiness.com/pref_product/view/931441/iron-ore.html'
     while True:
         try:
             if 'proxy' in locals():
@@ -299,14 +363,28 @@ def product_parse(url):
                 data['type'] = 'supplier'
 
                 parts = soup.find('ul', {'class': 'nav-pills'}).findAll('li')
-                name_part = parts[0].text.strip()
+                for i in range(0,len(parts)):
+                    new_url = 'https://www.go4worldbusiness.com' + parts[i].find('a').attrs['href']
+                    new_name_part = parts[i].text.strip()
+                    while True:
+                        try:
+                            if 'proxy' in locals():
+                                session = requests.session()
+                                html = session.get(new_url, proxies={'https': proxy}, headers=headers, timeout=30, verify=False).content
+                            else:
+                                session = requests.session()
+                                html = session.get(new_url, headers=headers, timeout=30, verify=False).content
 
-                ####tokenize html
-                tokens = re.compile('(<!--.*?-->)').split(str(soup.select('.body-container')))
-                data = merge(data, get_data_from_html(tokens, name_part))
-                for i in range(1,len(parts)):
+                            soup = BeautifulSoup(html, 'html.parser')
+                            new_tokens = re.compile('(<!--.*?-->)').split(str(soup.select('.body-container')[0].find('div')))
+                            data = merge(data, get_data_from_html(new_tokens, new_name_part))
+                            break
 
-
+                        except Exception as e:
+                            print(e)
+                            proxy, useragent = change_proxy()
+                            headers['User-Agent'] = useragent
+                            continue
 
 
             elif json_url['type'] == 'buyer':
@@ -319,8 +397,6 @@ def product_parse(url):
             proxy, useragent = change_proxy()
             headers['User-Agent'] = useragent
             continue
-
-
 ###########################################################
 def main_parse(p, urls):
 
