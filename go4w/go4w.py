@@ -82,13 +82,8 @@ def change_proxy():
 
         except:
             print('Exception occured in changeproxy')
-            time.sleep(60)
+            time.sleep(10)
             continue
-
-
-
-
-
 ##################################################
 def chunkIt(seq, num):
     '''
