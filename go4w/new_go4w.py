@@ -60,7 +60,8 @@ def change_proxy():
     url = 'http://falcon.proxyrotator.com:51337/'
 
     params = dict(
-        apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV'
+        apiKey='YEXDtBuyrKq3obRLwC4PUQmTZN2SjcxV',
+        connectionType='Datacenter'
     )
 
     print('********************************************')
