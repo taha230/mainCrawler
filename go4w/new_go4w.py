@@ -168,6 +168,16 @@ def clean_rn_text(text):
     '''
     return ' '.join(text.replace('\n', ' ').replace('\r',' ').split())
 ####################################################################################################################
+def is_html(txt):
+    '''
+    function_name: is_html
+    input: string
+    output: boolean
+    description: check if txt is html or not
+    '''
+    return bool(BeautifulSoup(txt, "html.parser").find())
+
+####################################################################################################################
 def tokenize_text(txt):
     '''
     function_name: tokenize_text
@@ -243,49 +253,141 @@ def get_data_from_html(tokens, name_part):
     output: json
     description: extract data from html using html comment tags
     '''
-
     data = {}
     ###############################################################################################
-    #############Company###########################################################################
-    if name_part == 'Company' or name_part == 'Our Company':
+    #############Global############################################################################
+    if name_part == 'global':
         for i in range(0, len(tokens)):
             if tokens[i].strip().replace(' ', '') == '<!--Title-->':
-                data[name_part + '_' + 'title'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
-                continue
-
-            if tokens[i].strip().replace(' ', '') == '<!--Country-->':
-                data[name_part + '_' + 'country'] = ' '.join(BeautifulSoup(tokens[i + 1], 'html.parser').text.strip().split('From')[-1].replace('\n','').strip().split(' '))
-                continue
+                data['global_title'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
 
             if tokens[i].strip().replace(' ', '') == '<!--Date-->':
-                data[name_part + '_' + 'date'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
-                continue
+                data['global_date'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
 
             if tokens[i].strip().replace(' ', '') == '<!--Description-->':
-                keys = tokens[i + 1].split('<b>')
-                temp = {}
-                if len(keys)>1:
-                    for k in keys:
-                        k_ = k.split('</b>')
-                        if len(k_) == 2:
-                            key = k_[0].replace(':', '').strip()
-                            value = clean_rn_text(BeautifulSoup(k_[1].replace(':', '').strip(), 'html.parser').text)
+                data['global_description'] = BeautifulSoup(tokens[i + 1], 'html.parser').text
 
-                            temp[key] = value
-                    data[name_part] = temp
-                else:
-                    keys = BeautifulSoup(tokens[i+1], 'html.parser').text.split('\r\n')
-                    temp = {}
-                    for k in keys:
-                        k_ = k.split(':')
-                        if(len(k_) > 1):
-                            temp[k_[0].strip()] = k_[1].strip()
-                    data[name_part] = temp
             if tokens[i].strip().replace(' ', '') == '<!--CategoryStub-->':
                 cats = BeautifulSoup(tokens[i + 1], 'html.parser').find_all('a')
                 if (len(cats) > 0):
-                    cats = [c.text for c in cats]
-                    data[name_part + '_' + 'categories'] = cats
+                    cats = [' '.join(c.text.strip().replace('\n', ' ').split()) for c in cats]
+                    temp = []
+                    temp_index = None
+                    for j in range(len(cats)):
+                        c_ = cats[j].split('Of')
+                        if (len(c_) > 1):
+                            if (temp_index):
+                                data['global_' + (temp_index + ' Of').replace(' ', '_')] = temp
+                                temp = []
+                            temp_index = c_[0]
+                            temp.append(c_[1])
+                        else:
+                            temp.append(cats[j])
+                    data['global_' + (temp_index + ' Of').replace(' ', '_')] = temp
+
+    ###############################################################################################
+    #############Buyer#############################################################################
+    if name_part == 'buyer':
+        for i in range(0, len(tokens)):
+            if tokens[i].strip().replace(' ', '') == '<!--Title-->':
+                data['buyer_title'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+
+            if tokens[i].strip().replace(' ', '') == '<!--Date-->':
+                data['buyer_date'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+
+            if tokens[i].strip().replace(' ', '') == '<!--Description-->':
+                data['buyer_description'] = BeautifulSoup(tokens[i + 1], 'html.parser').text
+
+            if tokens[i].strip().replace(' ', '') == '<!--CategoryStub-->':
+                cats = BeautifulSoup(tokens[i + 1], 'html.parser').find_all('a')
+                if (len(cats) > 0):
+                    cats = [' '.join(c.text.strip().replace('\n', ' ').split()) for c in cats]
+                    temp = []
+                    temp_index = None
+                    for j in range(len(cats)):
+                        c_ = cats[j].split('Of')
+                        if (len(c_) > 1):
+                            if (temp_index):
+                                data[(temp_index + ' Of').replace(' ', '_')] = temp
+                                temp = []
+                            temp_index = c_[0]
+                            temp.append(c_[1])
+                        else:
+                            temp.append(cats[j])
+                    data[(temp_index + ' Of').replace(' ', '_')] = temp
+    ###############################################################################################
+    #############Company###########################################################################
+    if name_part == 'Company':
+        for i in range(0, len(tokens)):
+            if tokens[i].strip().replace(' ', '') == '<!--Title-->':
+                data['company_name'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+
+            if tokens[i].strip().replace(' ', '') == '<!--Date-->':
+                data['buyer_date'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+
+            if tokens[i].strip().replace(' ', '') == '<!--Description-->':
+                keys = re.findall('<b>(.*?)</b>(.*?)<br/>', tokens[i + 1], re.DOTALL)
+                for k in keys:
+                    if (not is_html(k[1])):
+                        data['company_' + k[0].strip().replace(':', '').replace(' ', '_')] = k[1].strip().replace(':',
+                                                                                                                  '')
+                try:
+                    data['company_address'] = BeautifulSoup(tokens[i + 1], 'html.parser').find('address').text.strip()
+                except:
+                    data['company_address'] = None
+            if tokens[i].strip().replace(' ', '') == '<!--CategoryStub-->':
+                cats = BeautifulSoup(tokens[i + 1], 'html.parser').find_all('a')
+                if (len(cats) > 0):
+                    cats = [' '.join(c.text.strip().replace('\n', ' ').split()) for c in cats]
+                    temp = []
+                    temp_index = None
+                    for j in range(len(cats)):
+                        c_ = cats[j].split('Of')
+                        if (len(c_) > 1):
+                            if (temp_index):
+                                data[(temp_index + ' Of').replace(' ', '_')] = temp
+                                temp = []
+                            temp_index = c_[0]
+                            temp.append(c_[1])
+                        else:
+                            temp.append(cats[j])
+                    data[(temp_index + ' Of').replace(' ', '_')] = temp
+    ###############################################################################################
+    #############Company###########################################################################
+    if name_part == 'Our Company':
+        for i in range(0, len(tokens)):
+            if tokens[i].strip().replace(' ', '') == '<!--Title-->':
+                data['company_name'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+
+            if tokens[i].strip().replace(' ', '') == '<!--Date-->':
+                data['buyer_date'] = BeautifulSoup(tokens[i + 1], 'html.parser').text.strip()
+
+            if tokens[i].strip().replace(' ', '') == '<!--Description-->':
+                keys = re.findall('<b>(.*?)</b>(.*?)<br/>', tokens[i+1], re.DOTALL)
+                for k in keys:
+                    if(not is_html(k[1])):
+                        data['company_'+k[0].strip().replace(':','').replace(' ','_')] = k[1].strip().replace(':','')
+                try:
+                    data['company_address'] = BeautifulSoup(tokens[i + 1], 'html.parser').find('address').text.strip()
+                except:
+                    data['company_address'] = None
+            if tokens[i].strip().replace(' ', '') == '<!--CategoryStub-->':
+                cats = BeautifulSoup(tokens[i + 1], 'html.parser').find_all('a')
+                if (len(cats) > 0):
+                    cats = [' '.join(c.text.strip().replace('\n',' ').split()) for c in cats]
+                    temp = []
+                    temp_index = None
+                    for j in range(len(cats)):
+                        c_ = cats[j].split('Of')
+                        if(len(c_)>1):
+                            if(temp_index):
+                                data[(temp_index + ' Of').replace(' ','_')] = temp
+                                temp = []
+                            temp_index = c_[0]
+                            temp.append(c_[1])
+                        else:
+                            temp.append(cats[j])
+                    data[(temp_index + ' Of').replace(' ','_')] = temp
     ###############################################################################################
     #############Products##########################################################################
     if name_part == 'Products':
@@ -305,98 +407,109 @@ def get_data_from_html(tokens, name_part):
                     continue
 
             if tokens[i].strip().replace(' ', '') == '<!--Description-->':
-                keys = BeautifulSoup(tokens[i + 1], 'html.parser').text.split('\r\n')
-                for k in keys:
-                    k_ = k.split(':')
-                    if (len(k_) > 1):
-                        temp[k_[0].strip()] = k_[1].strip()
+                desc = BeautifulSoup(tokens[i + 1], 'html.parser').text.replace('Inquire Now','').replace('Add to Favorites','').replace('\r\n','\n').strip()
+                temp['description'] = desc
                 if 'title' in temp:
                     product_list.append(temp)
                     temp = {}
 
         data[name_part] = product_list
-        ###############################################################################################
-        #############Products##########################################################################
-        if name_part == 'Management':
-            temp = {}
-            for i in range(0, len(tokens)):
-                if tokens[i].strip().replace(' ', '') == '<!--Description-->':
-                    keys = BeautifulSoup(tokens[i + 1], 'html.parser').text.split('\r\n')
-                    for k in keys:
-                        k_ = k.split(':')
-                        if (len(k_) > 1):
-                            temp[k_[0].strip()] = k_[1].strip()
-                    if 'title' in temp:
-                        product_list.append(temp)
-                        temp = {}
-
-            data[name_part] = product_list
 
     return data
 #####################################################################################################################
-def product_parse(url):
+def product_parse(index, urls):
     '''
     function_name: product_parse
     input: json
     output: json
     description: extract data from product page
     '''
+    cnt_ = 1
+    for url_ in urls:
 
-    json_url = json.loads(url.replace("\'","\""))
+        json_url = json.loads(url_.replace("\'", "\""))
 
-    url = json_url['url']
-    url = 'https://www.go4worldbusiness.com/pref_product/view/931441/iron-ore.html'
-    while True:
-        try:
-            if 'proxy' in locals():
-                session = requests.session()
-                html = session.get(url, proxies={'https': proxy}, headers=headers, timeout=30, verify=False).content
-            else:
-                session = requests.session()
-                html = session.get(url, headers=headers, timeout=30).content
+        url = json_url['url']
+        while True:
+            try:
+                if 'proxy' in locals():
+                    session = requests.session()
+                    conn = session.get(url, proxies={'https': proxy}, headers=headers, timeout=30, verify=False)
+                    if conn.status_code == 404:
+                        print(f'{url} not found')
+                        break
+                    else:
+                        html = conn.content
+                else:
+                    session = requests.session()
+                    conn = session.get(url, headers=headers, timeout=30, verify=False)
+                    if conn.status_code == 404:
+                        print(f'{url} not found')
+                        break
+                    else:
+                        html = conn.content
 
-            soup = BeautifulSoup(html, 'html.parser')
+                soup = BeautifulSoup(html, 'html.parser')
 
-            data = {}
+                data = {}
 
-            if json_url['type'] == 'supplier':
-                data['type'] = 'supplier'
+                data['type'] = json_url['type']
 
-                parts = soup.find('ul', {'class': 'nav-pills'}).findAll('li')
-                for i in range(0,len(parts)):
-                    new_url = 'https://www.go4worldbusiness.com' + parts[i].find('a').attrs['href']
-                    new_name_part = parts[i].text.strip()
-                    while True:
-                        try:
-                            if 'proxy' in locals():
-                                session = requests.session()
-                                html = session.get(new_url, proxies={'https': proxy}, headers=headers, timeout=30, verify=False).content
-                            else:
-                                session = requests.session()
-                                html = session.get(new_url, headers=headers, timeout=30, verify=False).content
-
-                            soup = BeautifulSoup(html, 'html.parser')
-                            new_tokens = re.compile('(<!--.*?-->)').split(str(soup.select('.body-container')[0].find('div')))
-                            data = merge(data, get_data_from_html(new_tokens, new_name_part))
-                            break
-
-                        except Exception as e:
-                            print(e)
-                            proxy, useragent = change_proxy()
-                            headers['User-Agent'] = useragent
-                            continue
+                new_tokens = re.compile('(<!--.*?-->)').split(str(soup.select('.body-container')[0].find('div')))
+                data = merge(data, get_data_from_html(new_tokens, 'global'))
 
 
-            elif json_url['type'] == 'buyer':
-                data['type'] = 'buyer'
+                parts = soup.find('ul', {'class': 'nav-pills'}).findAll('a')
+                parts = [(p.text.strip(), p.attrs['href']) for p in parts if 'Company' in p.text or 'Products' in p.text]
+                parts = list(set(parts))
+                if(len(parts) > 0):
+                    for p in parts:
+                        new_url = 'https://www.go4worldbusiness.com' + p[1]
+                        new_name_part = p[0]
+                        while True:
+                            try:
+                                if 'proxy' in locals():
+                                    session = requests.session()
+                                    conn = session.get(url, proxies={'https': proxy}, headers=headers, timeout=30, verify=False)
+                                    if conn.status_code == 404:
+                                        print(f'{url} not found')
+                                        break
+                                    else:
+                                        html = conn.content
+                                else:
+                                    session = requests.session()
+                                    conn = session.get(url, headers=headers, timeout=30, verify=False)
+                                    if conn.status_code == 404:
+                                        print(f'{url} not found')
+                                        break
+                                    else:
+                                        html = conn.content
 
+                                soup = BeautifulSoup(html, 'html.parser')
+                                new_tokens = re.compile('(<!--.*?-->)').split(str(soup.select('.body-container')[0].find('div')))
+                                data = merge(data, get_data_from_html(new_tokens, new_name_part))
+                                break
 
+                            except Exception as e:
+                                print(e)
+                                proxy, useragent = change_proxy()
+                                headers['User-Agent'] = useragent
+                                continue
+                    f.write(str(data) + '\n')
+                    break
+                else:
+                    new_tokens = re.compile('(<!--.*?-->)').split(str(soup.select('.body-container')[0].find('div')))
+                    data = merge(data, get_data_from_html(new_tokens, 'buyer'))
+                    f.write(str(data) + '\n')
+                    break
 
-        except Exception as e:
-            print(e)
-            proxy, useragent = change_proxy()
-            headers['User-Agent'] = useragent
-            continue
+            except Exception as e:
+                print(e)
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                continue
+        print(f'Process {index}: {cnt_} from {len(urls)} has been done.')
+        cnt_ = cnt_ + 1
 ###########################################################
 def main_parse(p, urls):
 
@@ -461,27 +574,24 @@ def main_parse(p, urls):
 with open('files/go4w_products/go4w_products_pages-1.json') as ff:
     urls = ff.readlines()
 
-f = open('files/go4w_final_results/go4w_products_pages.json', 'w')
+f = open('files/go4w_final_results/go4w_final-1.json', 'w')
 
 urls = [str(url).strip() for url in urls]
 
-for url in urls:
-    product_parse(url)
+number_processes = 6
+parts = chunkIt(urls, number_processes)
 
-# number_processes = 6
-# parts = chunkIt(urls, number_processes)
-#
-# processes = []
-#
-# for i in range(number_processes):
-#     processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
-#
-#
-# for p in processes:
-#     p.start()
-#
-# for p in processes:
-#     p.join()
+processes = []
+
+for i in range(number_processes):
+    processes.append(multiprocessing.Process(target=product_parse, args=[i,parts[i]]))
+
+
+for p in processes:
+    p.start()
+
+for p in processes:
+    p.join()
 
 f.close()
 
