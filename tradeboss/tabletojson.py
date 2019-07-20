@@ -1,0 +1,119 @@
+import json
+try:
+    from BeautifulSoup import BeautifulSoup
+except ImportError:
+    from bs4 import BeautifulSoup
+##########################################################
+##########################################################
+##########################################################
+def clean_text(text):
+    '''
+    function_name: clean_text
+    input: string
+    output: string
+    description: clearn text from \\t and \\r and \\n
+    '''
+
+    return str(text).replace('\\t','').replace('\\r','').replace('\\n','')
+
+
+def table_to_json(content, indent=None):
+    '''
+    function_name: table_to_json
+    input: string
+    output: json
+    description: get html of table and return json of contents in table
+    '''
+
+    try:
+        soup = BeautifulSoup(content, "lxml")
+        rows = soup.find_all("tr")
+
+        headers = []
+        thead = soup.find_all("th")
+        if thead:
+            for i in range(0,len(thead)):
+                headers.append(thead[i].text.strip())
+
+        if thead:
+            data = []
+            for row in rows:
+                temp = {}
+                cells = row.find_all("td")
+                if (len(cells) > 0):
+                    for i in range(0,len(headers)):
+                        if(len(str(headers[i]).replace(' ','_')) > 0):
+                            temp[clean_text(str(headers[i]).replace(' ','_'))] = clean_text(str(cells[i]).text.strip())
+                    if(bool(temp)):
+                        data.append(temp)
+            return data
+        else:
+            data = {}
+            for row in rows:
+                cells = row.find_all("td")
+                if (len(cells) % 2 == 0):
+                    for i in range(0, len(cells), 2):
+                        if (len(str(cells[i].text.strip()).replace(' ', '_')) > 0):
+                            data[clean_text(str(cells[i].text.strip()).replace(' ', '_'))] = clean_text(cells[i + 1].text.strip())
+            return data
+    except:
+        return None
+
+def table_to_json_complex(tables, indent=None):
+    '''
+    function_name: table_to_json_complex
+    input: list of table tag
+    output: json
+    description: get list of html table tags and return json of contents in tables
+    '''
+
+    soup1 = BeautifulSoup(str(tables[0]), "lxml")
+    soup2 = BeautifulSoup(str(tables[1]), "lxml")
+
+    headers = []
+    thead = soup1.find_all("th")
+    if thead:
+        for i in range(0,len(thead)):
+            if("Verified" not in str(thead[i].text.strip())):
+                headers.append(thead[i].text.strip())
+
+    rows = soup2.find_all("tr")
+
+    data = []
+    for row in rows:
+        temp = {}
+        cells = row.find_all("td")
+        for i in range(0,len(headers)):
+           if(len(str(headers[i]).replace(' ','_')) > 0):
+               temp[str(headers[i]).replace(' ','_')] = cells[i].text.strip()
+        data.append(temp)
+
+
+    return data
+
+
+def table_to_json_horizontal(table, indent=None):
+    '''
+    function_name: table_to_json_horizontal
+    input: horizontal table tag with th and td in each tr
+    output: json
+    description: get list of html table tags and return json of contents in table
+    '''
+    soup = BeautifulSoup(str(table), "lxml")
+
+    rows = soup.find_all('tr')
+
+    data = {}
+    try:
+        for row in rows:
+            th = row.find_all('th')[0]
+            td = row.find_all('td')[0]
+
+            if(len(str(th.text.strip())) > 0):
+                data[th.text.strip().replace(':','').strip()] = td.text.strip().replace(':','').strip()
+    except:
+        data = None
+
+
+    return data
+
