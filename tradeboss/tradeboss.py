@@ -136,9 +136,14 @@ def main_parse(index, urls):
                 soup = BeautifulSoup(html, 'html.parser')
                 data = {}
                 ######################################################################################
+                links = re.findall('\"/default.cgi/action/viewproducts/productid/(.*?)\"', str(soup))
+                links = ['http://www.tradeboss.com/default.cgi/action/viewproducts/productid/' + str(l) for l in links]
+                links = list(set(links))
+                links = links
+                for l in links:
+                    f.write(str(l) + '\n')
 
-
-
+                break
             except Exception as e:
                 print(e)
                 proxy, useragent = change_proxy()
@@ -150,23 +155,21 @@ def main_parse(index, urls):
 with open('tradeboss_pages_links.txt') as ff:
     urls = ff.readlines()
 
-f = open('tradeboss_final_result.txt','w')
+f = open('tradeboss_product_pages.txt','w')
 
 
-main_parse(1, urls)
+number_processes = 6
+parts = chunkIt(urls, number_processes)
 
-# number_processes = 6
-# parts = chunkIt(urls, number_processes)
-#
-# processes = []
-#
-# for i in range(number_processes):
-#     processes.append(multiprocessing.Process(target=page_parse, args=[i,parts[i]]))
-#
-# for p in processes:
-#     p.start()
-#
-# for p in processes:
-#     p.join()
+processes = []
+
+for i in range(number_processes):
+    processes.append(multiprocessing.Process(target=main_parse, args=[i,parts[i]]))
+
+for p in processes:
+    p.start()
+
+for p in processes:
+    p.join()
 
 f.close()
