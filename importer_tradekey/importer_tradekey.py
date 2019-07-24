@@ -15,7 +15,12 @@ import requests
 import requests.exceptions
 import time
 import warnings
+import sys
+from requests.auth import HTTPBasicAuth
+
+sys.path.append("/file")
 warnings.filterwarnings("ignore")
+
 
 ##################################################
 ##################################################
@@ -198,9 +203,6 @@ def create_all_product_url(proxy, pages, process):
         print("process : " + str(process) + ' ------- ' + str(processed) + '  from  ' + str(len(pages)))
         if (processed > 5): break
 
-
-
-
 ###########################################################
 def create_category_url_product(proxy):
     '''
@@ -343,8 +345,6 @@ def create_category_url_supplier(proxy):
             break
 
     f_categories.close()
-
-
 
 ############################################################
 def create_category_url_product_layer2(proxy, urls, process):
@@ -645,59 +645,272 @@ def create_all_pages_category_url_supplier(proxy, categories, process):
 
     file_all_pages_categories_url.close()
 
-############################################################
 
-def crawlBuyer(proxy , urls , process):
+#########################################################
+
+def crawlSupplier_Products(proxy , url):
 
     '''
-        function_name: crawlProduct
-        input: proxy, urls, process
-        output: last phase of crawler run in clery
-        description: create json output of products form product page
+        function_name: crawlSupplier_Products
+        input: proxy, url
+        output: outjson
+        description: crawl product information of supplier page
     '''
 
-    processed = 0
-    for url in list(urls):
+    outJson = {}
 
-        while True:
-            try:
-                s = requests.session()
-                con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
-                if (con.status_code == 404):
-                    break
-                else:
-                    html = con.content
-                    soup = BeautifulSoup(html, 'html.parser')
+    while True:
+        try:
+            s = requests.session()
+            con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+            if (con.status_code == 404):
+                break
+            else:
+                html = con.content
+                soup = BeautifulSoup(html, 'html.parser')
+                productList = []
+                if (soup.find('div' , id = 'product-first-section')):
+                    for product in soup.find('div' , id = 'product-first-section').find_all('div', class_= 'big-rows'):
+                        productJson = {}
+                        if (product.find('div', class_= 'listing-big-title') and product.find('div', class_= 'listing-big-title').find('a')):
+                            productJson['productTitle'] = product.find('div', class_= 'listing-big-title').find('a').text.strip()
 
+                        if (product.find('div', class_='listing-big-img') and product.find('div', class_='listing-big-img').find('a') and
+                            len(product.find('div', class_='listing-big-img').find('a').get('rel'))>0):
+                            productJson['ProductImageURL'] = product.find('div', class_='listing-big-img').find('a').get('rel')[0].strip()
 
+                        if (product.find('div', class_='listing-big-desc') and product.find('div', class_='listing-big-desc').find('p')):
+                            productJson['productText'] = product.find('div', class_='listing-big-desc').find('p').text.strip()
 
-            except requests.exceptions.HTTPError as e:
-                if (e.code == 403):
-                    proxy, useragent = change_proxy()
-                    headers['User-Agent'] = useragent
-                    time.sleep(30)
-                    continue
-            except EXCEPTIONS_TO_RETRY as e:
-                print(e)
+                        productList.append(productJson)
+
+                outJson['productList'] = productList
+
+        except requests.exceptions.HTTPError as e:
+            if (e.code == 403):
                 proxy, useragent = change_proxy()
                 headers['User-Agent'] = useragent
-                print('Error Occurred in creating all categories url function and try again')
                 time.sleep(30)
                 continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print(e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in creating all categories url function and try again')
+            time.sleep(30)
+            continue
 
-            except Exception as e:
-                print('Exception ' + str(e) + ' occured in creating all categories urls in url:' + url)
-                return {}
+        except Exception as e:
+            print('Exception ' + str(e) + ' occured in creating all categories urls in url:' + url)
+            return {}
 
-            else:
+        else:
+            break
+
+    return outJson
+
+#########################################################
+
+def crawlSupplier_SellOffers(proxy , url):
+
+    '''
+        function_name: crawlSupplier_Products
+        input: proxy, url
+        output: outjson
+        description: crawl product information of supplier page
+    '''
+
+    outJson = {}
+
+    while True:
+        try:
+            s = requests.session()
+            con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+            if (con.status_code == 404):
                 break
+            else:
+                html = con.content
+                soup = BeautifulSoup(html, 'html.parser')
 
-        processed += 1
-        print("process : " + str(process) + ' ------- ' + str(processed) + '  from  ' + str(len(pages)))
-        if processed > 5 : break
+                if (soup.find('div', id='product-first-section') and soup.find('div', id='product-first-section').find('h4')):
+                    outJson['SellOffers'] = soup.find('div', id='product-first-section').find('h4').text.strip()
 
-    f_buyer.close()
 
+        except requests.exceptions.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                time.sleep(30)
+                continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print(e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in creating all categories url function and try again')
+            time.sleep(30)
+            continue
+
+        except Exception as e:
+            print('Exception ' + str(e) + ' occured in creating all categories urls in url:' + url)
+            return {}
+
+        else:
+            break
+
+    return outJson
+#########################################################
+
+def crawlSupplier_ContactDetails(proxy , url):
+
+    '''
+        function_name: crawlSupplier_Products
+        input: proxy, url
+        output: outjson
+        description: crawl product information of supplier page
+    '''
+
+    outJson = {}
+
+    while True:
+        try:
+            s = requests.session()
+            con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+            if (con.status_code == 404):
+                break
+            else:
+                html = con.content
+                soup = BeautifulSoup(html, 'html.parser')
+
+                if (soup.find('div', class_= 'contact-info')):
+                    for div in soup.find('div', class_='contact-info').find_all('div', class_= 'ci-details'):
+                        outJson[div.find('label').text.strip().replace(':', '')] = clean_text_(div.find('p').text.strip())
+
+
+
+        except requests.exceptions.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                time.sleep(30)
+                continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print(e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in creating all categories url function and try again')
+            time.sleep(30)
+            continue
+
+        except Exception as e:
+            print('Exception ' + str(e) + ' occured in creating all categories urls in url:' + url)
+            return {}
+
+        else:
+            break
+
+    return outJson
+#########################################################
+
+def crawlSupplier_TrustProfile(proxy , url):
+
+    '''
+        function_name: crawlSupplier_Products
+        input: proxy, url
+        output: outjson
+        description: crawl product information of supplier page
+    '''
+
+    outJson = {}
+
+    while True:
+        try:
+            s = requests.session()
+            con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+            if (con.status_code == 404):
+                break
+            else:
+                html = con.content
+                soup = BeautifulSoup(html, 'html.parser')
+
+                if (soup.find('div', id= 'bi-body')):
+                    for div in soup.find('div', id='bi-body').find_all('div', class_= 'ci-details'):
+                        outJson[div.find('label').text.strip().replace(':', '')] = clean_text_(div.find('p').text.strip())
+
+                if (soup.find('div', class_= 'tp-body') and soup.find('div', class_= 'tp-body').find('p')):
+                    outJson['TrustProfile_text'] = clean_text_(soup.find('div', class_= 'tp-body').find('p').text.strip())
+
+        except requests.exceptions.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                time.sleep(30)
+                continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print(e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in creating all categories url function and try again')
+            time.sleep(30)
+            continue
+
+        except Exception as e:
+            print('Exception ' + str(e) + ' occured in creating all categories urls in url:' + url)
+            return {}
+
+        else:
+            break
+
+    return outJson
+
+#########################################################
+
+def crawlSupplier_Brochures(proxy , url):
+
+    '''
+        function_name: crawlSupplier_Products
+        input: proxy, url
+        output: outjson
+        description: crawl product information of supplier page
+    '''
+
+    outJson = {}
+
+    while True:
+        try:
+            s = requests.session()
+            con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+            if (con.status_code == 404):
+                break
+            else:
+                html = con.content
+                soup = BeautifulSoup(html, 'html.parser')
+
+                if (soup.find('div' , id = 'product-first-section') and soup.find('div' , id = 'product-first-section').find('h4')):
+                    outJson['Brochures'] = soup.find('div' , id = 'product-first-section').find('h4').text.strip()
+
+
+        except requests.exceptions.HTTPError as e:
+            if (e.code == 403):
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                time.sleep(30)
+                continue
+        except EXCEPTIONS_TO_RETRY as e:
+            print(e)
+            proxy, useragent = change_proxy()
+            headers['User-Agent'] = useragent
+            print('Error Occurred in creating all categories url function and try again')
+            time.sleep(30)
+            continue
+
+        except Exception as e:
+            print('Exception ' + str(e) + ' occured in creating all categories urls in url:' + url)
+            return {}
+
+        else:
+            break
+
+    return outJson
 
 ############################################################
 
@@ -711,10 +924,12 @@ def crawlSupplier(proxy , urls , process):
     '''
 
 
-    outJson = {}
     processed = 0
     for url in list(urls):
 
+        url = 'https://www.tradekey.com/company/Jiangyin-Daqiao-stainless-steel-tube-CoLtd-707169.html'
+
+        outJson = {}
         while True:
             try:
                 s = requests.session()
@@ -725,16 +940,55 @@ def crawlSupplier(proxy , urls , process):
                     html = con.content
                     soup = BeautifulSoup(html, 'html.parser')
 
-                    if (soup.find('div.company-name') and soup.find('div.company-name').find('a') and soup.find('div.company-name').find('a').find('span')):
-                        outJson['companyName'] = soup.find('div.company-name').find('a').find('span').text.strip()
-                    if (soup.find('div.company-name') and soup.find('div.company-name').find('p') and soup.find('div.company-name').find('p').find('span')):
-                        outJson['companyAddress'] = soup.find('div.company-name').find('p').find('span').text.strip()
+                    if (soup.find('div', class_='company-name') and soup.find('div', class_='company-name').find('a') and soup.find('div', class_='company-name').find('a').find('span')):
+                        outJson['companyName'] = soup.find('div', class_='company-name').find('a').find('span').text.strip()
+                    if (soup.find('div', class_='company-name') and soup.find('div', class_='company-name').find('p') and soup.find('div', class_='company-name').find('p').find('span')):
+                        outJson['companyAddress'] = soup.find('div', class_='company-name').find('p').find('span').text.strip()
                     if (soup.find('div' , id == 'product-body') and soup.find('div' , id == 'product-body').find('p')):
                         outJson['productText'] = soup.find('div' , id == 'product-body').find('p').text().strip()
-                    if (soup.find_all('div', class_= 'ci-details')):
-                        for div in soup.find_all('div', class_= 'ci-details'):
-                            if (div.find('label') and div.find('p')):
-                                outJson[div.find('label').text.strip()] = div.find('p').text.strip()
+
+
+
+                    if (soup.find('div', id='basic-info')):
+                        for div in soup.find('div', id='basic-info').find_all('div', class_='ci-details'):
+                            outJson[div.find('label').text.strip().replace(':', '')] = clean_text_(
+                                div.find('p').text.strip())
+
+                    if (soup.find('div', id='section-factory-info')):
+                        for div in soup.find('div', id='section-factory-info').find_all('div', class_='ci-details'):
+                            outJson[div.find('label').text.strip().replace(':', '')] = clean_text_(
+                                div.find('p').text.strip())
+
+                    if (soup.find('div', id='section-other-info')):
+                        for div in soup.find('div', id='section-factory-info').find_all('div', class_='ci-details'):
+                            outJson[div.find('label').text.strip().replace(':', '')] = clean_text_(
+                                div.find('p').text.strip())
+
+
+
+                    ####################################################################################################
+                    productsJson, Sell_OffersJson, Contact_DetailsJson, Trust_ProfileJson, BrochuresJson= {}, {}, {}, {}, {}
+                    for li in soup.find_all('li', class_='nav_btn'):
+                        if (li.find('a') and li.find('a')['href']):
+
+                            if ('Products' in li.find('a').get('title')):
+                                productsJson = crawlSupplier_Products(proxy, li.find('a').get('href'))
+                            if (False and 'Sell Offers' in li.find('a').get('title')):
+                                Sell_OffersJson = crawlSupplier_SellOffers(proxy, li.find('a').get('href'))
+                            if ('Contact Details' in li.find('a').get('title')):
+                                Contact_DetailsJson = crawlSupplier_ContactDetails(proxy, li.find('a').get('href'))
+                            if (False and 'Trust Profile' in li.find('a').get('title')):
+                                Trust_ProfileJson = crawlSupplier_TrustProfile(proxy, li.find('a').get('href'))
+                            if (False and 'Brochures' in li.find('a').get('title')):
+                                BrochuresJson = crawlSupplier_Brochures(proxy, li.find('a').get('href'))
+
+
+
+                    merge(outJson , productsJson)
+                    merge(outJson, Sell_OffersJson)
+                    merge(outJson, Contact_DetailsJson)
+                    merge(outJson, Trust_ProfileJson)
+                    merge(outJson, BrochuresJson)
 
 
 
@@ -760,10 +1014,80 @@ def crawlSupplier(proxy , urls , process):
                 break
 
         processed += 1
-        print("process : " + str(process) + ' ------- ' + str(processed) + '  from  ' + str(len(pages)))
+        print("process : " + str(process) + ' ------- ' + str(processed) + '  from  ' + str(len(urls)))
         if processed > 5 : break
 
+    f_supplier.close()
+
+############################################################
+
+def crawlBuyer(proxy , urls , process):
+
+    '''
+        function_name: crawlBuyer
+        input: proxy, urls, process
+        output: last phase of crawler run in clery
+        description: create json output of buyer form buyer page
+    '''
+
+
+    processed = 0
+    for url in list(urls):
+        # url = 'https://importer.tradekey.com/buyoffer/Interested-In-Purchasing-Pet-Bottle-Scrap-1411588.html'
+        outJson = {}
+
+        while True:
+            try:
+                s = requests.session()
+                con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+                if (con.status_code == 404):
+                    break
+                else:
+                    html = con.content
+                    soup = BeautifulSoup(html, 'html.parser')
+
+                    if (soup.find('div', class_= 'bo-buyoffer-box') and soup.find('div', class_= 'bo-buyoffer-box').find('h1')):
+                        outJson['buyerTitle'] = soup.find('div', class_= 'bo-buyoffer-box').find('h1').text.strip()
+                    if (soup.find('div', class_= 'bo-buyoffer-box') and soup.find('div', class_= 'bo-buyoffer-box').find('ul')):
+                        for li in soup.find('div', class_= 'bo-buyoffer-box').find('ul').find_all('li'):
+                            if (li.find('span') and li.find('strong')):
+                                if ('img' in str(li)):
+                                    outJson['buyerCountry'] = li.find('span').find('img').get("title").strip()
+                                else:
+                                    outJson[li.find('span').text.strip().replace(':', '')] = li.find('strong').text.strip()
+
+
+                    if (soup.find('div', class_= 'bo-desc') and soup.find('div', class_= 'bo-desc').find('h4') and soup.find('div', class_= 'bo-desc').find('p')):
+                        outJson[soup.find('div', class_= 'bo-desc').find('h4').text.strip()] = clean_text_(soup.find('div', class_= 'bo-desc').find('p').text.strip())
+
+            except requests.exceptions.HTTPError as e:
+                if (e.code == 403):
+                    proxy, useragent = change_proxy()
+                    headers['User-Agent'] = useragent
+                    time.sleep(30)
+                    continue
+            except EXCEPTIONS_TO_RETRY as e:
+                print(e)
+                proxy, useragent = change_proxy()
+                headers['User-Agent'] = useragent
+                print('Error Occurred in creating all categories url function and try again')
+                time.sleep(30)
+                continue
+
+            except Exception as e:
+                print('Exception ' + str(e) + ' occured in creating all categories urls in url:' + url)
+                return {}
+
+            else:
+                break
+
+        processed += 1
+        file_all_buyer.write(json.dumps(outJson) + '\n')
+        print("process : " + str(process) + ' ------- ' + str(processed) + '  from  ' + str(len(urls)))
+        # if processed > 10 : break
+
     f_buyer.close()
+    file_all_buyer.close()
 
 ############################################################
 
@@ -779,6 +1103,7 @@ def isListEmpty(inList):
     return False # Not a list
 
 ##################################################
+
 def change_proxy():
     '''
     function_name: change_proxy
@@ -810,6 +1135,7 @@ def change_proxy():
             time.sleep(10)
             continue
 ##################################################
+
 def chunkIt(seq, num):
     '''
     function_name: chunkIt
@@ -828,6 +1154,7 @@ def chunkIt(seq, num):
     return out
 
 ##################################################
+
 def clean_html(text):
     '''
     function_name: clean_html
@@ -968,28 +1295,75 @@ def tokenize_buyer_or_supplier_text(result):
     # self.collection_importer_tradekey_data.update({'Key': result['Key']},{'$set': newResult})
 
 ########################################################################################
+def login():
+    login_url = "https://www.tradekey.com/index.html?action=login_signin"
+
+    s = requests.session()
+    con = s.get(login_url, proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+    if (con.status_code == 404):
+        return
+    else:
+
+        payload = {
+            'username': 'amootiranianInfo@gmail.com',
+            'password': 'Amoot123456',
+            'remember_me': '1'
+        }
+
+
+        # headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
+        # headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3'
+        # headers['Accept-Encoding'] = 'gzip, deflate, br'
+        # headers['Accept-Language'] = 'en-US,en;q=0.9,fa;q=0.8'
+        # headers['Cache-Control'] = 'max-age=0'
+        # headers['Connection'] = 'keep-alive'
+        # headers['Content-Length'] = '95'
+        # headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        # headers['Cookie'] = 'PHPSESSID=g2tcobuuuktnao8bkc6oej8473; c_popup_required=no; __auc=b5d1126e16bf5883d49b27122a6; c_login_required=no; timezone=4.5; _ga=GA1.2.250903019.1563192957; __tawkuuid=e::tradekey.com::SlA6+Cow9dUw2h9MMg3fXkqEYmBRx8V2gXHGyWi6ueUa5AhmFQxL2tyhHcavonVf::2; open=yes; viewedOuibounceModal=true; banner_showed=1; timezone=4.5; c_memtype=3; c_name=ali+alavi+; c_email=amootiranianinfo%40gmail.com; c_userid=12122905; c_buyer_seller=1; __utmc=22121982; __utmz=22121982.1563699175.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); signup_popu_dely_two=1; _sbcnt=1; pm_inquiry=1; sbalg=1; _sbapp=1; bclg=3; c_member_posting_cookie=1; __asc=b39caa9316c1df58af4fbb31844; __utma=22121982.250903019.1563192957.1563867010.1563870726.6; TawkConnectionTime=0; __utmt=1; __utmb=22121982.9.10.1563870727'
+        # headers['Host'] = 'www.tradekey.com'
+        # headers['Origin'] = 'https://www.tradekey.com'
+        headers['Referer'] = 'https://www.tradekey.com/index.html?action=login_signin'
+        # headers['Upgrade-Insecure-Requests'] = '1'
+
+        result = s.post(login_url, proxies={'http': proxy}, data = payload,  headers=headers)
+
+        url = 'https://www.tradekey.com/profile_contact/uid/707169/Jiangyin-Daqiao-stainless-steel-tube-Co-Ltd.htm'
+
+        outJson= {}
+        con = s.get(url.strip(), proxies={'http': proxy}, headers=headers, timeout=30, verify=False)
+        if (con.status_code == 404):
+            return
+        else:
+            html = con.content
+            soup = BeautifulSoup(html, 'html.parser')
+
+
+            if (soup.find('div', id='ci-body')):
+                for div in soup.find('div', id='ci-body').find_all('div', class_='ci-details'):
+                    outJson[div.find('label').text.strip().replace(':', '')] = clean_text_(div.find('p').text.strip())
+
+    return outJson
 
 
 
-############################################################
 
 
 
 
-f_categories = open('categories_importer_tradekey_buyer.txt', 'a+')
-f_categories_read = open('categories_importer_tradekey_buyer.txt', 'r')
+f_categories = open('files/categories_importer_tradekey_buyer.txt', 'a+')
+f_categories_read = open('files/categories_importer_tradekey_buyer.txt', 'r')
 
-# file_all_pages_categories_url = open('categories_all_pages_importer_tradekey_supplier.txt', 'w')
-# f_category = open("categories_importer_tradekey_supplier.txt", "r")
+# file_all_pages_categories_url = open('files/categories_all_pages_importer_tradekey_supplier.txt', 'w')
+# f_category = open("files/categories_importer_tradekey_supplier.txt", "r")
 
-# file_all_product_categories_url = open('all_buyer_importer_tradekey.txt', 'w')
-# f_page = open("categories_all_pages_importer_tradekey_buyer.txt", "r")
+# file_all_product_categories_url = open('files/all_buyer_importer_tradekey.txt', 'w')
+# f_page = open("files/categories_all_pages_importer_tradekey_buyer.txt", "r")
 
-f_buyer = open('all_buyer_importer_tradekey.txt', 'r')
-file_all_buyer = open('BuyerOut.txt', 'w')
+f_buyer = open('files/all_buyer_importer_tradekey.txt', 'r')
+file_all_buyer = open('files/BuyerOut.txt', 'w')
 
-f_supplier = open('all_supplier_importer_tradekey.txt', 'r')
-file_all_supplier = open('SupplierOut.txt', 'w')
+f_supplier = open('files/all_supplier_importer_tradekey.txt', 'r')
+file_all_supplier = open('files/SupplierOut.txt', 'w')
 
 
 urls = f_categories_read.readlines()
@@ -1001,6 +1375,9 @@ suppliers = f_supplier.readlines()
 
 
 proxy, useragent = change_proxy()
+
+login()
+
 # headers['User-Agent'] = useragent
 
 # create_category_url_buyyer(proxy)

@@ -623,10 +623,10 @@ transaction.query(graql_delete_query)
 transaction.commit()
 
 #write_result_db()
-#write_db_KG(1,DBTotalCount,1)
+# write_db_KG(1,DBTotalCount,1)
 client.close()
 
-number_processes = 5
+number_processes = 3
 processes = []
 countEachProcess = DBTotalCount / number_processes
 
