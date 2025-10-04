@@ -7,7 +7,7 @@
 
 
 
-# 🌐 Supplier Crawler – B2B Websites Extractor
+# 🌐 Main Crawler – B2B Websites Extractor
 
 This project is a **web crawler** designed to extract supplier information and websites from major **B2B trading platforms**.  
 It stores results in **MongoDB**, using `unique_key` to ensure no duplicates, and provides a modular crawler setup so new platforms can be easily added.
